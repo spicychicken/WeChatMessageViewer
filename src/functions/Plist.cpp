@@ -5,9 +5,14 @@
 #include <sstream>
 #include <iomanip>
 
-#include "libplist/plist++.h"
+#include "plist/plist++.h"
 
 using namespace Plist;
+
+template<class NodeType>
+NodeType* plistAsType(PList::Node* node) {
+    return dynamic_cast<NodeType*>(node);
+}
 
 static std::string secondToDateTime(int second)
 {
@@ -25,12 +30,12 @@ std::string getValueAsString(PList::Node* node)
     switch (node->GetType())
     {
     case plist_type::PLIST_BOOLEAN:
-        value = std::to_string(node->as<PList::Boolean>()->GetValue());
+        value = std::to_string(plistAsType<PList::Boolean>(node)->GetValue());
         break;
     
     case plist_type::PLIST_DATA:
         {
-            auto data = node->as<PList::Data>()->GetValue();
+            auto data = plistAsType<PList::Data>(node)->GetValue();
             value.assign(data.begin(), data.end());
         }
         break;
@@ -45,23 +50,23 @@ std::string getValueAsString(PList::Node* node)
         break;
     
     case plist_type::PLIST_KEY:
-        value = node->as<PList::Key>()->GetValue();
+        value = plistAsType<PList::Key>(node)->GetValue();
         break;
 
     case plist_type::PLIST_REAL:
-        value = std::to_string(node->as<PList::Real>()->GetValue());
+        value = std::to_string(plistAsType<PList::Real>(node)->GetValue());
         break;
 
     case plist_type::PLIST_STRING:
-        value = node->as<PList::String>()->GetValue();
+        value = plistAsType<PList::String>(node)->GetValue();
         break;
 
     case plist_type::PLIST_UID:
-        value = std::to_string(node->as<PList::Uid>()->GetValue());
+        value = std::to_string(plistAsType<PList::Uid>(node)->GetValue());
         break;
 
     case plist_type::PLIST_UINT:
-        value = std::to_string(node->as<PList::Integer>()->GetValue());
+        value = std::to_string(plistAsType<PList::Integer>(node)->GetValue());
         break;
 
     default:
@@ -76,7 +81,7 @@ void toMapImpl(PList::Node* node, PList::Array* objectsNode, const std::string& 
     {
     case plist_type::PLIST_DICT:
         {
-            PList::Dictionary* pDict = node->as<PList::Dictionary>();
+            PList::Dictionary* pDict = plistAsType<PList::Dictionary>(node);
             for (PList::Dictionary::iterator iter = pDict->Begin(); iter != pDict->End(); ++iter)
             {
                 if (iter->second)
@@ -90,11 +95,11 @@ void toMapImpl(PList::Node* node, PList::Array* objectsNode, const std::string& 
     
     case plist_type::PLIST_ARRAY:
         {
-            PList::Array* pArray = node->as<PList::Array>();
+            PList::Array* pArray = plistAsType<PList::Array>(node);
             int size = plist_array_get_size(pArray->GetPlist());
             for (int i = 0; i < size; ++i)
             {
-                auto child = pArray->at(i);
+                auto child = (*pArray)[i];
                 if (child)
                 {
                     auto key = (parentKey == "" ? std::to_string(i) : parentKey + "." + std::to_string(i));
@@ -107,7 +112,7 @@ void toMapImpl(PList::Node* node, PList::Array* objectsNode, const std::string& 
     case plist_type::PLIST_UID:
         {
             auto uid = getValueAsString(node);
-            toMapImpl(objectsNode->at(std::stoi(uid)), objectsNode, parentKey, results);
+            toMapImpl((*objectsNode)[std::stoi(uid)], objectsNode, parentKey, results);
         }
         break;
 
@@ -127,7 +132,7 @@ std::unordered_map<std::string, std::string> Plist::toMap(const std::string& con
         PList::Node* root = PList::Node::FromPlist(node);
         if (root->GetType() == plist_type::PLIST_DICT)
         {
-            PList::Dictionary* pDict = root->as<PList::Dictionary>();
+            PList::Dictionary* pDict = plistAsType<PList::Dictionary>(root);
             for (PList::Dictionary::iterator iter = pDict->Begin(); iter != pDict->End(); ++iter)
             {
                 if (iter->second)
@@ -145,8 +150,8 @@ PList::Array* findObjects(PList::Node* root)
 {
     if (root->GetType() == plist_type::PLIST_DICT)
     {
-        PList::Dictionary* pDict = root->as<PList::Dictionary>();
-        return pDict->at("$objects")->as<PList::Array>();
+        PList::Dictionary* pDict = plistAsType<PList::Dictionary>(root);
+        return plistAsType<PList::Array>((*pDict)["$objects"]);
     }
     return nullptr;
 }

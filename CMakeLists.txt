@@ -72,7 +72,7 @@ set_target_properties(WeChatMessageViewer PROPERTIES
     CXX_EXTENSIONS NO
 )
 
-find_library(LIBPLIST plist-2.0)
+find_library(LIBPLISTPP NAMES plist++-2.0 REQUIRED)
 
 target_link_libraries(WeChatMessageViewer PRIVATE 
                 Qt5::Widgets
@@ -83,4 +83,5 @@ target_link_libraries(WeChatMessageViewer PRIVATE
                 tinyxml2::tinyxml2
                 fmt::fmt-header-only
                 OpenAL::OpenAL
-                ${LIBPLIST})
+                ${LIBPLIST}
+                ${LIBPLISTPP})
