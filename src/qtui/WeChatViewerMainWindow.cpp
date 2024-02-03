@@ -95,7 +95,7 @@ void WeChatViewerMainWindow::showOverviewWidget() {
         overviewWidget = new OverviewWidget(this);
     }
 
-    if (!currentUser->hasFriendData())
+    if (currentUser && !currentUser->hasFriendData())
     {
         executeAsyncActions(AsyncActions::AsyncActions_LoadFriend, std::bind([](auto& user, auto backupParser) {
             backupParser->loadUserFriends(*user);
@@ -136,7 +136,7 @@ void WeChatViewerMainWindow::switchToSubWidget(QWidget* newWidget) {
     }
 
     auto currentTab = tabWidget->widget(tabWidget->currentIndex());
-    if (currentTab->layout()->count() == 0)
+    if (currentUser && currentTab->layout()->count() == 0)
     {
         currentTab->layout()->addWidget(newWidget);
     }

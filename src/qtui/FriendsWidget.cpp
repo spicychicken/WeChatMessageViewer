@@ -29,7 +29,7 @@ FriendsWidget::~FriendsWidget()
 
 void FriendsWidget::setCurrentUser(wechat::model::WeChatLoginUser* user)
 {
-    if (user != currentUser)
+    if (user != currentUser && user != nullptr)
     {
         currentUser = user;
 
