@@ -1,6 +1,7 @@
 #include "Utils.h"
 
 #include <iostream>
+#include <filesystem>
 
 #include <regex>
 #include <fstream>
@@ -17,11 +18,11 @@ using std::unordered_map;
 bool Utils::isFileExist(const string &fileName)
 {
     // C++17以前
-    ifstream ifile(fileName.c_str());
-    return ifile.good();
+    // ifstream ifile(fileName.c_str());
+    // return ifile.good();
 
     // C++17以后
-    // std::filesystem::exists
+    return std::filesystem::exists(fileName);
 }
 
 bool Utils::startsWith(const string& value, const string& prefix)

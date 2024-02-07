@@ -7,10 +7,9 @@
 #include "wechat/model/Model.h"
 #include "BackupFileParser.h"
 
-namespace wechat
+namespace wechat::parser
 {
-namespace parser
-{
+
 class MessageParser
 {
 public:
@@ -36,7 +35,6 @@ protected:
     BackupFileParser*                   backupParser;
 };
 
-}
 }
 
 #endif

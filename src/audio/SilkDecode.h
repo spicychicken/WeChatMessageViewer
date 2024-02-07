@@ -3,12 +3,9 @@
 
 #include <string>
 
-namespace audio
-{
-namespace convert
+namespace audio::convert
 {
     int silkToPcm(const std::string& input, std::string& output);
-}
 }
 
 

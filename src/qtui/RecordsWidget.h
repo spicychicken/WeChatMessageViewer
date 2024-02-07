@@ -5,13 +5,10 @@
 #include <QStandardItemModel>
 #include "./ui_recordswidget.h"
 
-namespace wechat
-{
-namespace model
+namespace wechat::model
 {
 class WeChatLoginUser;
 class WeChatFriend;
-}
 }
 
 class WeChatViewerMainWindow;

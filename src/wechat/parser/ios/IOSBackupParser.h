@@ -6,11 +6,7 @@
 
 #include "../BackupFileParser.h"
 
-namespace wechat
-{
-namespace parser
-{
-namespace ios
+namespace wechat::parser::ios
 {
 
 class IOSBackupParser : public BackupFileParser
@@ -39,8 +35,6 @@ private:
     std::string                         backupPath;
 };
 
-}
-}
 }
 
 #endif // IOSBackupParser

@@ -7,9 +7,7 @@
 
 #include "md5/md5.h"
 
-namespace wechat
-{
-namespace model
+namespace wechat::model
 {
 
 enum class UserType
@@ -236,7 +234,6 @@ private:
     std::string                     thumb;
 };
 
-}   // model
-}   // wechat
+}   // wechat::model
 
 #endif // WECHATMODEL_H

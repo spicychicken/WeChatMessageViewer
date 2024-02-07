@@ -4,12 +4,9 @@
 #include "../MessageParser.h"
 #include "IOSBackupArchives.h"
 
-namespace wechat
+namespace wechat::parser::ios
 {
-namespace parser
-{
-namespace ios
-{
+
 class IOSMessageParser : public MessageParser
 {
 public:
@@ -24,8 +21,6 @@ private:
     IOSBackupArchives& iosArchives;
 };
 
-}
-}
 }
 
 #endif

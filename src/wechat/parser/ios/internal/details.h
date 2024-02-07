@@ -6,13 +6,7 @@
 #include <tuple>
 #include <unordered_map>
 
-namespace wechat
-{
-namespace parser
-{
-namespace ios
-{
-namespace details
+namespace wechat::parser::ios::details
 {
 
 struct SessionRecord
@@ -54,9 +48,6 @@ std::vector<ChatRecord> getChatRecordsByFriend(const std::string& dbPath, const 
 
 std::vector<int> getChatRecordInfoByFriend(const std::string& dbPath, const std::string& friendID);
 
-}
-}
-}
 }
 
 #endif

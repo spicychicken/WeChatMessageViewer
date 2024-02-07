@@ -4,12 +4,9 @@
 #include <QtWidgets/QWidget>
 #include "./ui_overviewwidget.h"
 
-namespace wechat
-{
-namespace model
+namespace wechat::model
 {
 class WeChatLoginUser;
-}
 }
 
 class WeChatViewerMainWindow;

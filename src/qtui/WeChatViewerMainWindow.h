@@ -11,18 +11,17 @@
 
 #include "./ui_wechatviewermainwindow.h"
 
-namespace wechat
-{
-namespace model
+namespace wechat::model
 {
     class WeChatBackup;
     class WeChatLoginUser;
 }
-namespace parser
+
+namespace wechat::parser
 {
     class BackupFileParser;
 }
-}
+
 class OverviewWidget;
 class RecordsWidget;
 class FriendsWidget;

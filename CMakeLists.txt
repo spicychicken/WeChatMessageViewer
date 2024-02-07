@@ -67,11 +67,12 @@ add_executable(WeChatMessageViewer
     )
 
 set_target_properties(WeChatMessageViewer PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
 )
 
+find_library(LIBPLIST NAMES plist-2.0 REQUIRED)
 find_library(LIBPLISTPP NAMES plist++-2.0 REQUIRED)
 
 target_link_libraries(WeChatMessageViewer PRIVATE 

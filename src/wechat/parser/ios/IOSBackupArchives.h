@@ -5,11 +5,7 @@
 #include <vector>
 #include <functional>
 
-namespace wechat
-{
-namespace parser
-{
-namespace ios
+namespace wechat::parser::ios
 {
 
 struct ManifestRecord
@@ -48,8 +44,6 @@ private:
     std::string                     manifestPath;
 };
 
-}
-}
 }
 
 #endif // IOSBACKUPARCHIVES_H

@@ -7,9 +7,7 @@
 
 #include "wechat/model/Model.h"
 
-namespace wechat
-{
-namespace parser
+namespace wechat::parser
 {
 
 enum class ParserType
@@ -46,7 +44,6 @@ private:
 
 BackupFileParser* createParser(ParserType type, const std::string& path);
 
-}
 }
 
 #endif // WECHATBACKUPPARSER_H
