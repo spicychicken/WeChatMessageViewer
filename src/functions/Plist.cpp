@@ -24,7 +24,7 @@ static std::string secondToDateTime(int second)
     return ss.str();
 }
 
-std::string getValueAsString(PList::Node* node)
+static std::string getValueAsString(PList::Node* node)
 {
     std::string value;
     switch (node->GetType())
@@ -75,7 +75,7 @@ std::string getValueAsString(PList::Node* node)
     return value;
 }
 
-void toMapImpl(PList::Node* node, PList::Array* objectsNode, const std::string& parentKey, std::unordered_map<std::string, std::string>& results)
+static void toMapImpl(PList::Node* node, PList::Array* objectsNode, const std::string& parentKey, std::unordered_map<std::string, std::string>& results)
 {
     switch (node->GetType())
     {
@@ -96,14 +96,13 @@ void toMapImpl(PList::Node* node, PList::Array* objectsNode, const std::string& 
     case plist_type::PLIST_ARRAY:
         {
             PList::Array* pArray = plistAsType<PList::Array>(node);
-            int size = plist_array_get_size(pArray->GetPlist());
-            for (int i = 0; i < size; ++i)
+            for (PList::Array::iterator iter = pArray->Begin(); iter != pArray->End(); ++iter)
             {
-                auto child = (*pArray)[i];
-                if (child)
+                if (*iter)
                 {
-                    auto key = (parentKey == "" ? std::to_string(i) : parentKey + "." + std::to_string(i));
-                    toMapImpl(child, objectsNode, key, results);
+                    int index = pArray->GetNodeIndex(*iter);
+                    auto key = (parentKey == "" ? std::to_string(index) : parentKey + "." + std::to_string(index));
+                    toMapImpl(*iter, objectsNode, key, results);
                 }
             }
         }
@@ -126,7 +125,8 @@ std::unordered_map<std::string, std::string> Plist::toMap(const std::string& con
 {
     std::unordered_map<std::string, std::string> results;
     plist_t node = nullptr;
-    plist_from_memory(content.c_str(), content.length(), &node);
+    plist_format_t format;
+    plist_from_memory(content.c_str(), content.length(), &node, &format);
     if (node)
     {
         PList::Node* root = PList::Node::FromPlist(node);
@@ -146,12 +146,16 @@ std::unordered_map<std::string, std::string> Plist::toMap(const std::string& con
     return results;
 }
 
-PList::Array* findObjects(PList::Node* root)
+PList::Array* findArrayInDictByKey(PList::Node* root, const std::string& key)
 {
     if (root->GetType() == plist_type::PLIST_DICT)
     {
         PList::Dictionary* pDict = plistAsType<PList::Dictionary>(root);
-        return plistAsType<PList::Array>((*pDict)["$objects"]);
+        auto iter = pDict->Find(key);
+        if (iter != pDict->End() && iter->second->GetType() == plist_type::PLIST_ARRAY)
+        {
+            return plistAsType<PList::Array>(iter->second);
+        }
     }
     return nullptr;
 }
@@ -160,11 +164,12 @@ std::unordered_map<std::string, std::string> Plist::arrayToMap(const std::string
 {
     std::unordered_map<std::string, std::string> results;
     plist_t node = nullptr;
-    plist_from_memory(content.c_str(), content.length(), &node);
+    plist_format_t format;
+    plist_from_memory(content.c_str(), content.length(), &node, &format);
     if (node)
     {
         PList::Node* root = PList::Node::FromPlist(node);
-        PList::Array* objectsNode = findObjects(root);
+        PList::Array* objectsNode = findArrayInDictByKey(root, "$objects");
         if (root && objectsNode)
         {
             toMapImpl(root, objectsNode, "", results);

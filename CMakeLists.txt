@@ -8,6 +8,7 @@ find_package(Protobuf CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_package(tinyxml2 CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(unofficial-libplist CONFIG REQUIRED)
 
 # OpenAL
 find_package(OpenAL CONFIG REQUIRED)
@@ -72,9 +73,6 @@ set_target_properties(WeChatMessageViewer PROPERTIES
     CXX_EXTENSIONS NO
 )
 
-find_library(LIBPLIST NAMES plist-2.0 REQUIRED)
-find_library(LIBPLISTPP NAMES plist++-2.0 REQUIRED)
-
 target_link_libraries(WeChatMessageViewer PRIVATE 
                 Qt5::Widgets
                 protobuf::libprotoc
@@ -84,5 +82,5 @@ target_link_libraries(WeChatMessageViewer PRIVATE
                 tinyxml2::tinyxml2
                 fmt::fmt-header-only
                 OpenAL::OpenAL
-                ${LIBPLIST}
-                ${LIBPLISTPP})
+                unofficial::libplist::libplist
+                unofficial::libplist::libplist++)

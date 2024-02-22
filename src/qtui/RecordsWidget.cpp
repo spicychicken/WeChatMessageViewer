@@ -50,7 +50,7 @@ void RecordsWidget::cleanWidget()
     friendsList->clear();
     itemModel->removeRows(0, itemModel->rowCount());
 
-    friendImage->setPixmap(QPixmap(":icon/icons/DefaultProfileHead@2x.png"));
+    // friendImage->setPixmap(QPixmap(":icon/icons/DefaultProfileHead@2x.png"));
     friendName->setText("");
     friendTotal->setText("");
     friendStartDate->setText("");
