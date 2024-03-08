@@ -9,6 +9,7 @@ find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_package(tinyxml2 CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(unofficial-libplist CONFIG REQUIRED)
+find_package(jsoncpp CONFIG REQUIRED)
 
 # OpenAL
 find_package(OpenAL CONFIG REQUIRED)
@@ -65,13 +66,19 @@ add_executable(WeChatMessageViewer
     ${_source_list}
     ${_ui_list}
     ${CMAKE_CURRENT_BINARY_DIR}/translations.qrc
-    )
+)
 
 set_target_properties(WeChatMessageViewer PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
 )
+
+if(WIN32)
+    add_definitions(-DSQLITE_HAS_CODEC)
+    find_package(sqlcipher CONFIG REQUIRED)
+    target_link_libraries(WeChatMessageViewer PRIVATE Version.lib sqlcipher::sqlcipher)
+endif()
 
 target_link_libraries(WeChatMessageViewer PRIVATE 
                 Qt5::Widgets
@@ -82,5 +89,6 @@ target_link_libraries(WeChatMessageViewer PRIVATE
                 tinyxml2::tinyxml2
                 fmt::fmt-header-only
                 OpenAL::OpenAL
+                JsonCpp::JsonCpp
                 unofficial::libplist::libplist
                 unofficial::libplist::libplist++)

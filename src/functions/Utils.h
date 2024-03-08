@@ -7,6 +7,10 @@
 
 namespace Utils
 {
+    std::string getCurrentPath();
+    std::vector<std::string> listSubFolder(const std::string& folder);
+    std::vector<std::string> listSubFiles(const std::string& folder);
+    bool isFolderExist(const std::string& folder);
     bool isFileExist(const std::string& fileName);
     bool startsWith(const std::string& value, const std::string& prefix);
     bool endsWith(const std::string& value, const std::string& postfix);
@@ -19,6 +23,8 @@ namespace Utils
     bool match(const std::string& value, const std::string& pattern);
 
     std::string removeHtmlTags(const std::string& htmls);
+    std::string getXmlAttributeByPath(const std::string& xmlContent, const std::string& path, const std::string& attr);
+    std::string getXmlNodeByPath(const std::string& xmlContent, const std::string& path);
 };
 
 #endif // UTILS_H

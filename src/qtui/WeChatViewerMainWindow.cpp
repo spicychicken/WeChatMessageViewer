@@ -1,6 +1,7 @@
 #include "WeChatViewerMainWindow.h"
 
 #include <QFileDialog>
+#include <QInputDialog>
 #include <iostream>
 #include <future>
 #include <functional>
@@ -34,10 +35,22 @@ WeChatViewerMainWindow::~WeChatViewerMainWindow()
 
 void WeChatViewerMainWindow::on_selectBKFileBtn_clicked()
 {
+    /* backupParser = wechat::parser::createParser("E:/appdata/wx/WeChat Files");
+
+    backupParser->setNotifer(std::bind([](const std::string& message, auto mainWindow) {
+        emit mainWindow->status_message(QString::fromStdString(message));
+    }, std::placeholders::_1, this));
+    backupParser->loadBackup(*backup);
+
+    executeAsyncActions(AsyncActions::AsyncActions_LoadUser, std::bind([](auto backupParser, auto& backup) {
+        backupParser->loadLoginUsers(*backup);
+    }, backupParser, std::ref(backup)));    */
+
     QString path = QFileDialog::getExistingDirectory(nullptr, tr("select IOS backup folder"), ".");
     if (path.length() != 0)
     {
-        backupParser = wechat::parser::createParser(wechat::parser::ParserType::ParserType_IOS, path.toStdString());
+        backupParser = wechat::parser::createParser(path.toStdString());
+
         backupParser->setNotifer(std::bind([](const std::string& message, auto mainWindow) {
             emit mainWindow->status_message(QString::fromStdString(message));
         }, std::placeholders::_1, this));

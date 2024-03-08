@@ -10,10 +10,7 @@
 namespace wechat::parser
 {
 
-enum class ParserType
-{
-    ParserType_IOS,
-};
+constexpr static char LOCAL_DEFAULT_HEAD_IMAGE[] = ":icon/icons/DefaultProfileHead@2x.png";
 
 using ParserStateNotifer = std::function<void (const std::string message)>;
 
@@ -38,11 +35,15 @@ public:
         }
     }
 
+protected:
+    void updateLoginUserRecord(model::WeChatLoginUser& user);
+
 private:
     ParserStateNotifer      notifer;
 };
 
-BackupFileParser* createParser(ParserType type, const std::string& path);
+BackupFileParser* createParser(const std::string& path);
+// BackupFileParser* createParser(ParserType type, const std::string& path);
 
 }
 

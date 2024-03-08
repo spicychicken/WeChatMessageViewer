@@ -32,7 +32,6 @@ using namespace wechat::parser::ios;
 
 constexpr static char TENCENT_MANIFEST_DOMAIN[] = "AppDomain-com.tencent.xin";
 constexpr static char TENCENT_SHARED_MANIFEST_DOMAIN[] = "AppDomainGroup-group.com.tencent.xin";
-constexpr static char LOCAL_DEFAULT_HEAD_IMAGE[] = ":icon/icons/DefaultProfileHead@2x.png";
 
 IOSBackupArchives   iosArchives;
 
@@ -43,6 +42,8 @@ IOSBackupParser::IOSBackupParser(const string& path) : backupPath(path)
 
 void IOSBackupParser::loadBackup(model::WeChatBackup& backup)
 {
+    backup.setBackupType(wechat::model::BackupType::BackupType_IOS);
+
     string infoPlistContent;
     if (iosArchives.getFileContentByPath("Info.plist", infoPlistContent))
     {
@@ -173,23 +174,8 @@ void IOSBackupParser::loadUserFriends(WeChatLoginUser& user)
     loadUserFriendsFromMessageDB(user.UserID(), friends);
     loadUserFriendsFromContactDB(user.UserID(), friends);
 
-    int totalCount = 0, firstTime = INT_MAX, lastTime = INT_MIN;
-    for (auto& f : friends)
-    {
-        totalCount += f.second.RecordCount();
-        if (firstTime > f.second.BeginTime())
-        {
-            firstTime = f.second.BeginTime();
-        }
-        if (lastTime < f.second.LastTime())
-        {
-            lastTime = f.second.LastTime();
-        }
-    }
-    user.setRecordCount(totalCount);
-    user.setBeginTime(firstTime);
-    user.setLastTime(lastTime);
     user.setFriends(std::move(friends));
+    updateLoginUserRecord(user);
 }
 
 // Documents/{userID}/session/session.db
@@ -322,7 +308,7 @@ void IOSBackupParser::loadUserFriendsFromMessageDB(const string& userID, unorder
             auto& infos = details::getChatRecordInfoByFriend(path, sessionID);
             if (!infos.empty())
             {
-                afriend.setDbPath(path);
+                afriend.appendDbPath(path);
                 afriend.setRecordCount(infos[0]);
                 afriend.setBeginTime(infos[1]);
                 afriend.setLastTime(infos[2]);
@@ -367,7 +353,7 @@ void IOSBackupParser::loadUserFriendsFromContactDB(const string& userID, unorder
             {
                 f.setCity(profile["4"]);
             }
-            f.setRemark(profile["5"]);
+            f.setSignature(profile["5"]);
         }
     }
 }
@@ -442,15 +428,16 @@ void IOSBackupParser::loadGroupMember(const WeChatLoginUser& user, WeChatFriend&
 
 vector<WeChatMessage> IOSBackupParser::loadFriendMessages(const WeChatLoginUser& user, WeChatFriend& afriend, int page, int countPerPage)
 {
-    if (!afriend.DbPath().empty())
+    // itune backup have only 1 db
+    if (!afriend.DbPaths().empty())
     {
-        auto& records = details::getChatRecordsByFriend(afriend.DbPath(), afriend.UserID(), page, countPerPage);
+        auto& records = details::getChatRecordsByFriend(afriend.DbPaths()[0], afriend.UserID(), page, countPerPage);
 
         IOSMessageParser        messageParser(user, afriend, this, iosArchives);
         vector<WeChatMessage>   messages(records.size());
         for (int i = 0; i < messages.size(); ++i)
         {
-            messages[i] = messageParser.parse(records[i].createTime, records[i].message, records[i].des, records[i].type, records[i].mesLocalID);
+            messages[i] = messageParser.parse(records[i].createTime, records[i].message, records[i].des == 0, records[i].type, records[i].mesLocalID);
         }
         return messages;
     }

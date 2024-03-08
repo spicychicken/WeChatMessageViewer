@@ -24,6 +24,7 @@ void widgetLinkActivated(int type, const QString& link)
         }
         else
         {
+            // [To-Do]
             system(("\"" + BROSWER_PATH + "\" file:///" + fileLink).c_str());
         }
     }

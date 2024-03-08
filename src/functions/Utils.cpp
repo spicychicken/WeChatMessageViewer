@@ -10,10 +10,47 @@
 #include <sstream>
 #include <iomanip>
 
+#include <tinyxml2.h>
+
 using std::string;
 using std::ifstream;
 using std::vector;
 using std::unordered_map;
+using namespace tinyxml2;
+
+string Utils::getCurrentPath()
+{
+    return std::filesystem::current_path().string();
+}
+
+vector<string> Utils::listSubFolder(const string& folder)
+{
+    vector<string> subFolder;
+    for (auto& entry : std::filesystem::directory_iterator(folder))
+    {
+        if (entry.is_directory()) {
+            subFolder.push_back(entry.path().filename().string());
+        }
+    }
+    return subFolder;
+}
+
+vector<string> Utils::listSubFiles(const string& folder)
+{
+    vector<string> subFolder;
+    for (auto& entry : std::filesystem::directory_iterator(folder))
+    {
+        if (!entry.is_directory()) {
+            subFolder.push_back(entry.path().filename().string());
+        }
+    }
+    return subFolder;
+}
+
+bool Utils::isFolderExist(const std::string& folder)
+{
+    return std::filesystem::exists(folder);
+}
 
 bool Utils::isFileExist(const string &fileName)
 {
@@ -107,4 +144,53 @@ std::string Utils::removeHtmlTags(const std::string& htmls)
     std::regex html_tags("<[^>]*>");
     output = std::regex_replace(output, html_tags, "");
     return output;
+}
+
+
+string Utils::getXmlAttributeByPath(const string& xmlContent, const string& path, const string& attr)
+{
+    string attrValue;
+    XMLDocument doc;
+    if (doc.Parse(xmlContent.c_str()) == XML_SUCCESS)
+    {
+        vector<string> paths = Utils::split(path, "/");
+
+        XMLElement* element = doc.RootElement();
+        for (int i = 1; i < paths.size() && element; ++i)
+        {
+            element = element->FirstChildElement(paths[i].c_str());
+        }
+
+        if (element)
+        {
+            const XMLAttribute* attrNode = element->FindAttribute(attr.c_str());
+            if (attrNode)
+            {
+                attrValue.assign(attrNode->Value());
+            }
+        }
+    }
+    return attrValue;
+}
+
+string Utils::getXmlNodeByPath(const string& xmlContent, const string& path)
+{
+    string value;
+    XMLDocument doc;
+    if (doc.Parse(xmlContent.c_str()) == XML_SUCCESS)
+    {
+        vector<string> paths = Utils::split(path, "/");
+
+        XMLElement* element = doc.RootElement();
+        for (int i = 1; i < paths.size() && element; ++i)
+        {
+            element = element->FirstChildElement(paths[i].c_str());
+        }
+
+        if (element && element->FirstChild())
+        {
+            value.assign(element->FirstChild()->Value());
+        }
+    }
+    return value;
 }

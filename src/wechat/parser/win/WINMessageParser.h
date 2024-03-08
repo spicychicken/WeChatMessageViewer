@@ -1,16 +1,15 @@
-#ifndef IOSMESSAGEPARSER_H_
-#define IOSMESSAGEPARSER_H_
+#ifndef WINMESSAGEPARSER_H_
+#define WINMESSAGEPARSER_H_
 
 #include "../MessageParser.h"
-#include "IOSBackupArchives.h"
 
-namespace wechat::parser::ios
+namespace wechat::parser::win
 {
 
-class IOSMessageParser : public MessageParser
+class WINMessageParser : public MessageParser
 {
 public:
-    explicit IOSMessageParser(const model::WeChatLoginUser& u, model::WeChatFriend& f, BackupFileParser* p, IOSBackupArchives& archives);
+    explicit WINMessageParser(const model::WeChatLoginUser& u, model::WeChatFriend& f, BackupFileParser* p, const std::string& path);
 
 private:
     void parseSender(model::WeChatMessage& msg) const override;
@@ -19,7 +18,7 @@ private:
     void parseByVideo(model::WeChatMessage& msg) const override;
 
 private:
-    IOSBackupArchives& iosArchives;
+    std::string         basePath;
 };
 
 }

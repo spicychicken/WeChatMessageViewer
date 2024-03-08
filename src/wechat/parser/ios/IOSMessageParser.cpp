@@ -15,11 +15,26 @@ IOSMessageParser::IOSMessageParser(const WeChatLoginUser& u, WeChatFriend& f, Ba
 {
 }
 
+void IOSMessageParser::parseSender(model::WeChatMessage& msg) const
+{
+    if (afriend.Type() == wechat::model::UserType::UserType_Group)
+    {
+        string content = msg.getContent();
+        size_t pos = content.find(":\n");
+        if (pos != string::npos)
+        {
+            string senderName = content.substr(0, pos);
+            msg.setSender(getSenderByName(senderName));
+            msg.setContent(content.substr(pos + 2));
+        }
+    }
+}
+
 void IOSMessageParser::parseByImage(WeChatMessage& msg) const
 {
     MessageParser::parseByImage(msg);
 
-    string baseFileName = "Documents/" + user.UserID() + "/Img/" + afriend.UserID() + "/" + msg.getResourceID();
+    string baseFileName = "Documents/" + user.UserID() + "/Img/" + afriend.UserID() + "/" + msg.getExtra();
     string path;
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".pic", path))
     {
@@ -35,7 +50,7 @@ void IOSMessageParser::parseByAudio(WeChatMessage& msg) const
 {
     MessageParser::parseByAudio(msg);
 
-    string baseFileName = "Documents/" + user.UserID() + "/Audio/" + afriend.UserID() + "/" + msg.getResourceID();
+    string baseFileName = "Documents/" + user.UserID() + "/Audio/" + afriend.UserID() + "/" + msg.getExtra();
     string path;
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".aud", path))
     {
@@ -47,7 +62,7 @@ void IOSMessageParser::parseByVideo(WeChatMessage& msg) const
 {
     MessageParser::parseByVideo(msg);
 
-    string baseFileName = "Documents/" + user.UserID() + "/Video/" + afriend.UserID() + "/" + msg.getResourceID();
+    string baseFileName = "Documents/" + user.UserID() + "/Video/" + afriend.UserID() + "/" + msg.getExtra();
     string path;
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".mp4", path))
     {

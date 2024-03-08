@@ -8,7 +8,8 @@
 #include <tuple>
 #include <unordered_map>
 
-#include "sqlite3.h"
+// #include "sqlite3.h"
+#include "sqlcipher/sqlite3.h"
 
 namespace sqlitedb
 {
@@ -39,6 +40,9 @@ private:
 
 int queryCount(const std::string& path, const std::string& sql);
 bool queryData(const std::string& path, const std::string& sql, StmtReader& reader);
+
+int queryCount(const std::string& path, const std::string& password, const std::string& sql);
+bool queryData(const std::string& path, const std::string& password, const std::string& sql, StmtReader& reader);
 
 }
 #endif
