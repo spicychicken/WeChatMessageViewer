@@ -57,18 +57,13 @@ public:
     // async actions, execute in another thread
     void executeAsyncActions(AsyncActions action, std::function<void(void)> func);
 
-    // wechat - variable
-    wechat::parser::BackupFileParser*               backupParser = nullptr;
-
 private:
     void showOverviewWidget();
     void showRecordsWidget();
     void showFriendsWidget();
 
 private:
-    wechat::model::WeChatLoginUser*                 currentUser = nullptr;
-    wechat::model::WeChatBackup*                    backup = nullptr;
-    std::unordered_map<std::string, std::string>    nameToIDs;
+    std::unordered_map<std::string, std::string>    displayToUserIDs;
 
     // UI - variable
 private:

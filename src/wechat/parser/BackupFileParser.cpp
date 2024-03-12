@@ -28,10 +28,15 @@ void parser::BackupFileParser::updateLoginUserRecord(model::WeChatLoginUser& use
 
 static model::BackupType detectBackupType(const std::string& path)
 {
-    if (Utils::isFileExist(path + "/Manifest.db")) {
+    if (Utils::isFileExist(path + "/Manifest.db"))
+    {
         return model::BackupType::BackupType_IOS;
     }
-    return model::BackupType::BackupType_WIN;
+    else if (Utils::isFileExist(path + "/All Users") && Utils::isFolderExist(path + "/Applet"))
+    {
+        return model::BackupType::BackupType_WIN;
+    }
+    return model::BackupType::BackupType_UNKNOWN;
 }
 
 parser::BackupFileParser* parser::createParser(const std::string& path)

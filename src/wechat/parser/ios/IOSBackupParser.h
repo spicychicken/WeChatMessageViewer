@@ -22,6 +22,9 @@ public:
     void loadGroupMember(const model::WeChatLoginUser& user, model::WeChatFriend& afriend, const std::string& memberName) override;
     std::vector<model::WeChatMessage> loadFriendMessages(const model::WeChatLoginUser& user, model::WeChatFriend& afriend, int page, int countPerPage = 20) override;
 
+    std::string loadUserHeadImgData(const model::WeChatLoginUser* user, const model::WeChatUser* userOrFriend) override;
+    std::string loadUserAudioData(const model::WeChatLoginUser* user, const model::WeChatFriend* afriend, const model::WeChatMessage& message) override;
+
 private:
     void loadLoginUsersFromMMDB(std::unordered_map<std::string, model::WeChatLoginUser>& users);
     void loadLoginUsersFromLoginInfo2(std::unordered_map<std::string, model::WeChatLoginUser>& users);

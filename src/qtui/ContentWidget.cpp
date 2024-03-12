@@ -1,31 +1,43 @@
 #include "ContentWidget.h"
 
 #include <QLabel>
-#include <wechat/parser/MessageParser.h>
-
 #include <iostream>
 
+#include "wechat/parser/MessageParser.h"
+#include "wechat/WeChatContext.h"
 #include "audio/OpenAL.h"
 
 using wechat::parser::MessageParser;
 using wechat::model::ChatMessageType;
 
 static std::string BROSWER_PATH = "D:/tools/Mozilla Firefox/firefox.exe";
-void widgetLinkActivated(int type, const QString& link)
+static std::string PARAMS_SEPARATOR = "<|>";
+
+void widgetLinkActivatedForOther(const std::string& fileLink)
 {
-    std::string fileLink = link.toStdString();
+    audio::OpenAL::stop();
+
     if (!fileLink.empty())
     {
-        audio::OpenAL::stop();
-        if (type == 1)
+        std::string command = "\"\"" + BROSWER_PATH + "\" \"file:///" + fileLink + "\"\"";
+        system(command.c_str());
+    }
+}
+
+static void widgetLinkActivatedForAudio(const wechat::model::WeChatFriend* afriend, const wechat::model::WeChatMessage& message)
+{
+    audio::OpenAL::stop();
+
+    if (sBackup->getBackupType() == wechat::model::BackupType::BackupType_WIN)
+    {
+        auto data = sParser->loadUserAudioData(sCurrentUser, afriend, message);
+        audio::OpenAL::singlePlaySilkFromData(data);
+    }
+    else
+    {
+        if (!message.getSrc().empty())
         {
-            // audio
-            audio::OpenAL::singlePlaySilk(fileLink);
-        }
-        else
-        {
-            // [To-Do]
-            system(("\"" + BROSWER_PATH + "\" file:///" + fileLink).c_str());
+            audio::OpenAL::singlePlaySilkFromPath(message.getSrc());
         }
     }
 }
@@ -45,7 +57,7 @@ static QWidget* createImageWidget(const wechat::model::WeChatMessage& message)
     qlabel->setToolTip("<img src='" + QString::fromStdString(message.getThumb()) + "' />");
     qlabel->setStyleSheet("QLabel{padding:4px;border-radius:4px}");
     qlabel->connect(qlabel, &QLabel::linkActivated, [](const QString& link) {
-        widgetLinkActivated(0, link);
+        widgetLinkActivatedForOther(link.toStdString());
     });
     return qlabel;
 }
@@ -64,17 +76,23 @@ static QWidget* createVideoWidget(const wechat::model::WeChatMessage& message)
     qlabel->setToolTip("<img src='" + QString::fromStdString(message.getThumb()) + "' />");
     qlabel->setStyleSheet("QLabel{padding:4px;border-radius:4px}");
     qlabel->connect(qlabel, &QLabel::linkActivated, [](const QString& link) {
-        widgetLinkActivated(0, link);
+        widgetLinkActivatedForOther(link.toStdString());
     });
     return qlabel;
 }
 
-static QWidget* createAudioWidget(const wechat::model::WeChatMessage& message)
+static QWidget* createAudioWidget(const wechat::model::WeChatFriend* afriend, const wechat::model::WeChatMessage& message)
 {
-    QLabel* qlabel = new QLabel("<a href='" + QString::fromStdString(message.getSrc()) + "'>[Audio]</a>");
+    /* std::string audioSource = message.getSrc();
+    if (sBackup->getBackupType() == wechat::model::BackupType::BackupType_WIN)
+    {
+        audioSource = message.getDbPath() + PARAMS_SEPARATOR + message.getMsgSvrID();
+    }   */
+
+    QLabel* qlabel = new QLabel(QString::fromStdString("<a href='audio'>[Audio]</a>"));
     qlabel->setStyleSheet("QLabel{padding:4px;border-radius:4px}");
-    qlabel->connect(qlabel, &QLabel::linkActivated, [](const QString& link) {
-        widgetLinkActivated(1, link);
+    qlabel->connect(qlabel, &QLabel::linkActivated, [=](const QString& link) {
+        widgetLinkActivatedForAudio(afriend, message);
     });
     return qlabel;
 }
@@ -94,7 +112,7 @@ static QWidget* createSystemWidget(const wechat::model::WeChatMessage& message)
     return qlabel;
 }
 
-QWidget* ContentWidget::createWidget(const wechat::model::WeChatMessage& message)
+QWidget* ContentWidget::createWidget(const wechat::model::WeChatFriend* afriend, const wechat::model::WeChatMessage& message)
 {
     switch (message.getType())
     {
@@ -108,7 +126,7 @@ QWidget* ContentWidget::createWidget(const wechat::model::WeChatMessage& message
         return createVideoWidget(message);
         break;
     case ChatMessageType::Audio:
-        return createAudioWidget(message);
+        return createAudioWidget(afriend, message);
         break;
     case ChatMessageType::AppMessage:
         return createAppMsgWidget(message);
@@ -120,5 +138,18 @@ QWidget* ContentWidget::createWidget(const wechat::model::WeChatMessage& message
     default:
         break;
     }
-    return nullptr;
+    return createTextWidget(message);
+}
+
+QPixmap ContentWidget::fromWeChatUserHeadImg(const wechat::model::WeChatUser* userOrFriend)
+{
+    std::string localHeadImg = userOrFriend->LocalHeadImg();
+    if (localHeadImg.empty())
+    {
+        std::string imgData = sParser->loadUserHeadImgData(sCurrentUser, userOrFriend);
+        return QPixmap::fromImage(QImage::fromData((unsigned char*)imgData.c_str(), imgData.length()));
+    }
+    else {
+        return QPixmap(QString::fromStdString(localHeadImg));
+    }
 }

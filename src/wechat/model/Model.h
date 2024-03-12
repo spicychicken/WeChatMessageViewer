@@ -40,23 +40,6 @@ public:
     std::string HeadImgUrl() const      { return headImgUrl; }
     std::string HeadImgUrlHD() const    { return headImgUrlHD; }
 
-    std::string DisplayHeadImg() const
-    {
-        if (localHeadImg != "")
-        {
-            return localHeadImg;
-        }
-        else if (headImgUrlHD != "")
-        {
-            return headImgUrlHD;
-        }
-        else if (headImgUrl != "")
-        {
-            return headImgUrl;
-        }
-        return "";
-    }
-
     std::string DisplayName() const
     {
         if (remark != "")
@@ -198,6 +181,7 @@ enum class BackupType
 {
     BackupType_IOS,
     BackupType_WIN,
+    BackupType_UNKNOWN,
 };
 
 class WeChatBackup
@@ -248,11 +232,12 @@ class WeChatMessage
 {
 public:
     const WeChatUser* getSender() const               { return sender; }
-    // std::string getSenderName() const;
     std::string getContent() const                    { return content; }
+    std::string getMsgSvrID() const                   { return msgSvrID; }
     int getTime() const                               { return msgTime; }
     ChatMessageType getType() const                   { return type; }
     std::string getExtra() const                      { return extra; }
+    std::string getDbPath() const                     { return dbPath; }
 
     std::string getSrc() const                        { return src; }
     std::string getThumb() const                      { return thumb; }
@@ -260,11 +245,11 @@ public:
 public:
     void setTime(int t)                               { this->msgTime = t; }
     void setSender(const WeChatUser* s)               { this->sender = s; }
-    // void setSender(const std::string& name)           { this->senderName = name; }
     void setContent(const std::string& c)             { this->content = c; }
+    void setMsgSvrID(const std::string& id)           { this->msgSvrID = id; }
     void setType(int type);
-    void setResourceID(const std::string& resourceID) { this->resourceID = resourceID; }
     void setExtra(const std::string& extra)           { this->extra = extra; }
+    void setDbPath(const std::string& dbPath)         { this->dbPath = dbPath; }
 
     void setSrc(const std::string& src)               { this->src = src; }
     void setThumb(const std::string& thumb)           { this->thumb = thumb; }
@@ -272,11 +257,12 @@ public:
 private:
     ChatMessageType                 type;
     const WeChatUser*               sender = nullptr;
+    std::string                     msgSvrID;
     std::string                     content;
     int                             msgTime;
     std::string                     extra;
 
-    std::string                     resourceID;
+    std::string                     dbPath;
 
     // 
     std::string                     src;

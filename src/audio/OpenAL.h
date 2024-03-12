@@ -14,7 +14,8 @@ public:
     OpenAL();
     ~OpenAL();
 
-    static void singlePlaySilk(const std::string& filePath);
+    static void singlePlaySilkFromPath(const std::string& filePath);
+    static void singlePlaySilkFromData(const std::string& data);
     static void stop();
 
 private:

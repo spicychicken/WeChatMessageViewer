@@ -1,7 +1,5 @@
 #include "MessageParser.h"
 
-#include "functions/Utils.h"
-
 using std::string;
 using std::vector;
 
@@ -18,20 +16,21 @@ MessageParser::MessageParser(const WeChatLoginUser& u, WeChatFriend& f, BackupFi
 {
 }
 
-WeChatMessage MessageParser::parse(int createTime, const string& content, bool isSender, int type, const string& extra) const
+WeChatMessage MessageParser::parse(const string& msgSvrID, int createTime, const string& content, bool isSender, int type, const string& extra) const
 {
     WeChatMessage msg;
-    parseBasic(msg, createTime, content, isSender, type, extra);
-    parseSender(msg);
+    parseBasic(msg, msgSvrID, createTime, content, isSender, type, extra);
+    parseSender(msg, isSender);
     parseByType(msg);
     return msg;
 }
 
-void MessageParser::parseBasic(WeChatMessage& msg, int createTime, const std::string& message, bool isSender, int type, const std::string& extra) const
+void MessageParser::parseBasic(WeChatMessage& msg, const std::string& msgSvrID, int createTime, const std::string& message, bool isSender, int type, const std::string& extra) const
 {
     msg.setType(type);
     msg.setTime(createTime);
     msg.setContent(message);
+    msg.setMsgSvrID(msgSvrID);
     if (isSender) {
         msg.setSender(&user);
     }
@@ -68,78 +67,9 @@ void MessageParser::parseByType(WeChatMessage& msg) const
             parseBySystem(msg);
             break;
         default:
+            parseByOther(msg);
             break;
     }
-}
-
-void MessageParser::parseSender(model::WeChatMessage& msg) const
-{
-
-}
-
-void MessageParser::parseByText(model::WeChatMessage& msg) const
-{
-
-}
-
-void MessageParser::parseByImage(model::WeChatMessage& msg) const
-{
-
-}
-
-void MessageParser::parseByAudio(model::WeChatMessage& msg) const
-{
-
-}
-
-void MessageParser::parseByVideo(model::WeChatMessage& msg) const
-{
-    string senderName = Utils::getXmlAttributeByPath(msg.getContent(), "/msg/videomsg", "fromusername");
-    if (!senderName.empty())
-    {
-        msg.setSender(getSenderByName(senderName));
-    }
-}
-
-void MessageParser::parseByEmoticon(model::WeChatMessage& msg) const
-{
-
-}
-
-void MessageParser::parseByAppMsg(model::WeChatMessage& msg) const
-{
-    string senderName = Utils::getXmlNodeByPath(msg.getContent(), "/msg/fromusername");
-    if (!senderName.empty())
-    {
-        msg.setSender(getSenderByName(senderName));
-    }
-
-    string title = Utils::getXmlNodeByPath(msg.getContent(), "/msg/appmsg/title");
-    string url = Utils::getXmlNodeByPath(msg.getContent(), "/msg/appmsg/des");
-    string thumburl = Utils::getXmlNodeByPath(msg.getContent(), "/msg/appmsg/thumburl");
-    
-    msg.setContent(title);
-    msg.setSrc(url);
-    msg.setThumb(thumburl);
-}
-
-void MessageParser::parseBySystem(model::WeChatMessage& msg) const
-{
-    string oldC = msg.getContent(), newC = "";
-    if (Utils::startsWith(oldC, "<sysmsg"))
-    {
-        auto sysMsgType = Utils::getXmlAttributeByPath(oldC, "/sysmsg", "type");
-        if (sysMsgType == "sysmsgtemplate")
-        {
-            auto templateType = Utils::getXmlAttributeByPath(oldC, "/sysmsg/sysmsgtemplate/content_template", "type");
-        }
-        msg.setContent("-----------------------------");
-    }
-    else
-    {
-        newC = Utils::removeHtmlTags(oldC);
-    }
-    msg.setContent(newC);
 }
 
 const WeChatUser* MessageParser::getSenderByName(const string& senderName) const

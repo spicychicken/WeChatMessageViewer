@@ -25,6 +25,9 @@ public:
     virtual void loadGroupMember(const model::WeChatLoginUser& user, model::WeChatFriend& afriend, const std::string& memberName) = 0;
     virtual std::vector<model::WeChatMessage> loadFriendMessages(const model::WeChatLoginUser& user, model::WeChatFriend& afriend, int page, int countPerPage = 20) = 0;
 
+    virtual std::string loadUserHeadImgData(const model::WeChatLoginUser* user, const model::WeChatUser* userOrFriend) = 0;
+    virtual std::string loadUserAudioData(const model::WeChatLoginUser* user, const model::WeChatFriend* afriend, const model::WeChatMessage& message) = 0;
+
     void setNotifer(ParserStateNotifer n) {
         notifer = n;
     }
@@ -43,7 +46,6 @@ private:
 };
 
 BackupFileParser* createParser(const std::string& path);
-// BackupFileParser* createParser(ParserType type, const std::string& path);
 
 }
 

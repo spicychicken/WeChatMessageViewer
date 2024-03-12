@@ -11,7 +11,9 @@ namespace audio
 
 class SilkSong {
 public:
-    SilkSong(const std::string& path);
+    static SilkSong* fromPath(const std::string& path);
+    static SilkSong* fromData(const std::string& data);
+
     ~SilkSong();
 
     void play();
@@ -20,7 +22,9 @@ public:
     bool isPlaying();
 
 protected:
-    void loadFromSilk(const std::string& path);
+    SilkSong(const std::string& data);
+
+    void loadFromData(const std::string& data);
     void close();
 
 private:

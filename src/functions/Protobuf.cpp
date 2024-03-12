@@ -85,7 +85,36 @@ std::string getUnknownFieldData(const UnknownField& field)
     return value;
 }
 
-void toMapImpl(const std::string& parentID, const std::string& content, std::unordered_map<std::string, std::string>& results)
+static int countKeyWithPrefix(const std::unordered_map<std::string, std::string>& results, const std::string& key)
+{
+    int count = 0;
+
+}
+
+static void increaseKeyAndSetValue(std::unordered_map<std::string, std::string>& results, const std::string& key, const std::string& value)
+{
+    // add index
+    if (results.count(key + ".0") == 0)
+    {
+        results[key + ".0"] = value;
+    }
+    else
+    {
+        int count = std::count_if(results.begin(), results.end(), [&key](auto item) {
+            if (item.first.length() < key.length()) {
+                return false;
+            }
+            else if (item.first.substr(0, key.length()) != key) {
+                return false;
+            }
+            return true;
+        });
+        results[key + "." + std::to_string(count)] = value;
+    }
+}
+
+// [To-Do] memory leak?
+static void toMapImpl(const std::string& parentID, const std::string& content, std::unordered_map<std::string, std::string>& results)
 {
     Message* message = initializer.clone();
     if (message->ParseFromString(content) || message->ParseFromString(u8"\n" + content))
@@ -96,6 +125,7 @@ void toMapImpl(const std::string& parentID, const std::string& content, std::uno
             auto field = ufs.field(i);
 
             std::string fieldID = (parentID == "" ? "" : parentID + ".") + std::to_string(field.number());
+            // std::string fieldID = (parentID == "" ? "" : parentID + ".") + std::to_string(i);
 
             if (field.type() == UnknownField::TYPE_GROUP)
             {
@@ -105,13 +135,14 @@ void toMapImpl(const std::string& parentID, const std::string& content, std::uno
             {
                 toMapImpl(fieldID, getUnknownFieldData(field), results);
             }
-            else{
-                results[fieldID] = getUnknownFieldData(field);
+            else
+            {
+                increaseKeyAndSetValue(results, fieldID, getUnknownFieldData(field));
             }
         }
     }
     else{
-        results[parentID] = content;
+        increaseKeyAndSetValue(results, parentID, content);
     }
 }
 

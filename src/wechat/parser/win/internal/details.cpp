@@ -13,7 +13,8 @@ using std::unordered_map;
 using namespace wechat::parser::win;
 
 unordered_map<string, unsigned long> offsetOfRawKey = {
-    {"3.9.8.25", 0x3DFDAD0}
+    {"3.9.8.25", 0x3DFDAD0},
+    {"3.9.9.43", 0x40E9F90}
 };
 
 static DWORD getProcessIDByName(const string& name)
