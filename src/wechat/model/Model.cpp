@@ -23,7 +23,11 @@ bool WeChatUser::isSubscription(const string& userName)
             || (userName.compare("brandsessionholder") == 0)
             || (userName.compare("newsapp") == 0)
             || (userName.compare("weixin") == 0)
-            || (userName.compare("notification_messages") == 0);
+            || (userName.compare("notification_messages") == 0)
+            || (userName.compare("@publicUser") == 0)
+            || (userName.compare("mphelper") == 0)              // 公众平台安全助手
+            || (userName.compare("notifymessage") == 0)         // 服务通知
+            || (userName.compare("@CustomerService") == 0);     // 小程序客服消息
 }
 
 void WeChatLoginUser::setFriends(unordered_map<std::string, model::WeChatFriend>&& friends)

@@ -11,14 +11,12 @@ class WeChatLoginUser;
 class WeChatFriend;
 }
 
-class WeChatViewerMainWindow;
-
 class RecordsWidget : public QWidget, public Ui::RecordsWidget
 {
     Q_OBJECT
 
 public:
-    RecordsWidget(WeChatViewerMainWindow* window, QWidget* parent = nullptr);
+    RecordsWidget(QWidget* parent = nullptr);
     virtual ~RecordsWidget();
 
     void setCurrentUser(wechat::model::WeChatLoginUser* user);
@@ -46,7 +44,6 @@ private:
 private:
     wechat::model::WeChatLoginUser*         currentUser = nullptr;
     wechat::model::WeChatFriend*            currentFriend = nullptr;
-    WeChatViewerMainWindow*                 mainWindow = nullptr;
     QStandardItemModel*                     itemModel = nullptr;
 
     struct {

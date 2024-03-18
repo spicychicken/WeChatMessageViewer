@@ -30,6 +30,7 @@ public:
     std::string Email() const       { return email; }
     std::string Phone() const       { return phone; }
     std::string Remark() const      { return remark; }
+    std::string Signature() const   { return signature; }
 
     std::string UserID() const          { return userID; }
     std::string UserName() const        { return userName; }
@@ -41,13 +42,17 @@ public:
 
     std::string DisplayName() const
     {
-        if (aliasName != "")
+        if (remark != "")
         {
-            return aliasName;
+            return remark;
         }
         else if (nickName != "")
         {
             return nickName;
+        }
+        else if (aliasName != "")
+        {
+            return aliasName;
         }
         else if (userName != "")
         {
@@ -67,6 +72,7 @@ public:
     void setEmail(const std::string& email)         { this->email = email; }
     void setPhone(const std::string& phone)         { this->phone = phone; }
     void setRemark(const std::string& remark)       { this->remark = remark; }
+    void setSignature(const std::string& signature) { this->signature = signature; }
 
     void setUserID(const std::string& userID)               { this->userID = userID; }
     void setNickName(const std::string& nickName)           { this->nickName = nickName; }
@@ -91,6 +97,7 @@ private:
     std::string email;
     std::string phone;
     std::string remark;
+    std::string signature;
 
     std::string userID;
     std::string userName;
@@ -128,11 +135,22 @@ public:
     model::WeChatFriend& WeChatFriend::getMember(const std::string& memberID);
     const model::WeChatFriend& getMember(const std::string& memberID) const;
 
-    std::string DbPath() const                      { return dbPath; }
-    void setDbPath(const std::string& dbPath)       { this->dbPath = dbPath; }
+    // std::string DbPath() const                      { return dbPath; }
+    // void setDbPath(const std::string& dbPath)       { this->dbPath = dbPath; }
+
+    std::vector<std::string> DbPaths() const           { return dbPaths; }
+    void appendDbPath(const std::string& dbPath)       { dbPaths.push_back(dbPath); }
+
+    std::vector<int> DbCounts() const                  { return dbCounts; }
+    void appendDBPathAndCount(const std::string& dbPath, int count)
+    {
+        dbPaths.push_back(dbPath);
+        dbCounts.push_back(count);
+    }
 
 private:
-    std::string                                     dbPath;
+    std::vector<int>                                dbCounts;        // used in WIN PC
+    std::vector<std::string>                        dbPaths;
     std::unordered_map<std::string, WeChatFriend>   members;    // group members
 };
 
@@ -159,9 +177,18 @@ private:
     std::unordered_map<std::string, int>        idToIndexs;
 };
 
+enum class BackupType
+{
+    BackupType_IOS,
+    BackupType_WIN,
+    BackupType_UNKNOWN,
+};
+
 class WeChatBackup
 {
 public:
+    void setBackupType(BackupType type)                               { backupType = type; }
+    void setBackupPath(const std::string& path)                       { backupPath = path; }
     void setITuneVersion(const std::string& version)                  { iTuneVersion = version; }
     void setProductVersion(const std::string& version)                { productVersion = version; }
     void setLastBackupDate(const std::string& date)                   { lastBackupDate = date; }
@@ -175,12 +202,16 @@ public:
     std::string getITuneVersion() const                 { return iTuneVersion; }
     std::string getProductVersion() const               { return productVersion; }
     std::string getLastBackupDate() const               { return lastBackupDate; }
+    BackupType getBackupType() const                    { return backupType; }
 
 private:
     std::unordered_map<std::string, model::WeChatLoginUser>     loginUsers;
     std::string                     iTuneVersion;
     std::string                     productVersion;
     std::string                     lastBackupDate;
+
+    std::string                     backupPath;
+    BackupType                      backupType;
 };
 
 enum class ChatMessageType
@@ -201,11 +232,12 @@ class WeChatMessage
 {
 public:
     const WeChatUser* getSender() const               { return sender; }
-    // std::string getSenderName() const;
     std::string getContent() const                    { return content; }
+    std::string getMsgSvrID() const                   { return msgSvrID; }
     int getTime() const                               { return msgTime; }
     ChatMessageType getType() const                   { return type; }
-    std::string getResourceID() const                 { return resourceID; }
+    std::string getExtra() const                      { return extra; }
+    std::string getDbPath() const                     { return dbPath; }
 
     std::string getSrc() const                        { return src; }
     std::string getThumb() const                      { return thumb; }
@@ -213,10 +245,11 @@ public:
 public:
     void setTime(int t)                               { this->msgTime = t; }
     void setSender(const WeChatUser* s)               { this->sender = s; }
-    // void setSender(const std::string& name)           { this->senderName = name; }
     void setContent(const std::string& c)             { this->content = c; }
+    void setMsgSvrID(const std::string& id)           { this->msgSvrID = id; }
     void setType(int type);
-    void setResourceID(const std::string& resourceID) { this->resourceID = resourceID; }
+    void setExtra(const std::string& extra)           { this->extra = extra; }
+    void setDbPath(const std::string& dbPath)         { this->dbPath = dbPath; }
 
     void setSrc(const std::string& src)               { this->src = src; }
     void setThumb(const std::string& thumb)           { this->thumb = thumb; }
@@ -224,10 +257,12 @@ public:
 private:
     ChatMessageType                 type;
     const WeChatUser*               sender = nullptr;
-    // std::string                     senderName;
+    std::string                     msgSvrID;
     std::string                     content;
     int                             msgTime;
-    std::string                     resourceID;
+    std::string                     extra;
+
+    std::string                     dbPath;
 
     // 
     std::string                     src;

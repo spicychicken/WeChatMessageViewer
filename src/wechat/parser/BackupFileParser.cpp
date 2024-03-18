@@ -1,14 +1,53 @@
 #include "BackupFileParser.h"
 
+#include "functions/Utils.h"
 #include "ios/IOSBackupParser.h"
+#include "win/WINBackupParser.h"
 
 using namespace wechat;
 
-parser::BackupFileParser* parser::createParser(ParserType type, const std::string& path)
+void parser::BackupFileParser::updateLoginUserRecord(model::WeChatLoginUser& user)
 {
-    if (type == parser::ParserType::ParserType_IOS)
+    int totalCount = 0, firstTime = INT_MAX, lastTime = INT_MIN;
+    for (auto& f : user.getFriends())
+    {
+        totalCount += f.RecordCount();
+        if (firstTime > f.BeginTime())
+        {
+            firstTime = f.BeginTime();
+        }
+        if (lastTime < f.LastTime())
+        {
+            lastTime = f.LastTime();
+        }
+    }
+    user.setRecordCount(totalCount);
+    user.setBeginTime(firstTime);
+    user.setLastTime(lastTime);
+}
+
+static model::BackupType detectBackupType(const std::string& path)
+{
+    if (Utils::isFileExist(path + "/Manifest.db"))
+    {
+        return model::BackupType::BackupType_IOS;
+    }
+    else if (Utils::isFileExist(path + "/All Users") && Utils::isFolderExist(path + "/Applet"))
+    {
+        return model::BackupType::BackupType_WIN;
+    }
+    return model::BackupType::BackupType_UNKNOWN;
+}
+
+parser::BackupFileParser* parser::createParser(const std::string& path)
+{
+    model::BackupType type = detectBackupType(path);
+    if (type == model::BackupType::BackupType_IOS)
     {
         return new parser::ios::IOSBackupParser(path);
+    }
+    else if (type == model::BackupType::BackupType_WIN) {
+        return new parser::win::WINBackupParser(path);
     }
     return nullptr;
 }

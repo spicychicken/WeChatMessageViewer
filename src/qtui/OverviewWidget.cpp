@@ -5,9 +5,9 @@
 #include <QDateTime>
 
 #include "wechat/model/Model.h"
-#include "WeChatViewerMainWindow.h"
+#include "ContentWidget.h"
 
-OverviewWidget::OverviewWidget(WeChatViewerMainWindow* window, QWidget* parent) : QWidget(parent), mainWindow(window)
+OverviewWidget::OverviewWidget(QWidget* parent) : QWidget(parent)
 {
     setupUi(this);
 }
@@ -35,7 +35,8 @@ static void updateListWidget(QListWidget* listWidget, const std::vector<wechat::
     {
         QListWidgetItem* item = new QListWidgetItem();
         item->setText(QString::fromStdString(afriend.DisplayName()));
-        item->setIcon(QIcon(QString::fromStdString(afriend.LocalHeadImg())));
+        item->setIcon(QIcon(ContentWidget::fromWeChatUserHeadImg(&afriend)));
+
         listWidget->addItem(item);
     }
 }

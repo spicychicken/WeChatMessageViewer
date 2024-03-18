@@ -2,12 +2,13 @@
 
 #include <QDateTime>
 
+#include "wechat/WeChatContext.h"
 #include "wechat/model/Model.h"
-#include "WeChatViewerMainWindow.h"
+#include "ContentWidget.h"
 
 #include <iostream>
 
-FriendsWidget::FriendsWidget(WeChatViewerMainWindow* window, QWidget* parent) : QWidget(parent), mainWindow(window)
+FriendsWidget::FriendsWidget(QWidget* parent) : QWidget(parent)
 {
     setupUi(this);
 
@@ -137,7 +138,7 @@ void FriendsWidget::updateTableView()
         itemList << itemID;
 
         auto itemIcon = new QStandardItem();
-        itemIcon->setIcon(QIcon(QString::fromStdString(afriend.LocalHeadImg())));
+        itemIcon->setIcon(QIcon(ContentWidget::fromWeChatUserHeadImg(&afriend)));
         itemList << itemIcon;
 
         auto itemName = new QStandardItem(QString::fromStdString(afriend.DisplayName()));

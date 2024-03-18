@@ -1,6 +1,8 @@
 #include "WeChatViewerMainWindow.h"
 
 #include <QFileDialog>
+#include <QInputDialog>
+#include <QMessageBox>
 #include <iostream>
 #include <future>
 #include <functional>
@@ -10,6 +12,9 @@
 #include "OverviewWidget.h"
 #include "RecordsWidget.h"
 #include "FriendsWidget.h"
+#include "ContentWidget.h"
+
+#include "wechat/WeChatContext.h"
 
 #include "wechat/parser/BackupFileParser.h"
 #include "constants.h"
@@ -24,12 +29,12 @@ WeChatViewerMainWindow::WeChatViewerMainWindow(QWidget *parent) : QMainWindow(pa
     connect(this, SIGNAL(status_message(const QString&)), this, SLOT(do_status_message(const QString&)), Qt::ConnectionType::QueuedConnection);
     connect(this, SIGNAL(async_actions_done(AsyncActions)), this, SLOT(do_async_actions_done(AsyncActions)), Qt::ConnectionType::QueuedConnection);
 
-    backup = new wechat::model::WeChatBackup();
+    // backup = new wechat::model::WeChatBackup();
 }
 
 WeChatViewerMainWindow::~WeChatViewerMainWindow()
 {
-    delete backup;
+    // delete backup;
 }
 
 void WeChatViewerMainWindow::on_selectBKFileBtn_clicked()
@@ -37,39 +42,46 @@ void WeChatViewerMainWindow::on_selectBKFileBtn_clicked()
     QString path = QFileDialog::getExistingDirectory(nullptr, tr("select IOS backup folder"), ".");
     if (path.length() != 0)
     {
-        backupParser = wechat::parser::createParser(wechat::parser::ParserType::ParserType_IOS, path.toStdString());
-        backupParser->setNotifer(std::bind([](const std::string& message, auto mainWindow) {
-            emit mainWindow->status_message(QString::fromStdString(message));
-        }, std::placeholders::_1, this));
-        backupParser->loadBackup(*backup);
+        sWECHAT.createParserFromPath(path.toStdString());
 
-        executeAsyncActions(AsyncActions::AsyncActions_LoadUser, std::bind([](auto backupParser, auto& backup) {
-            backupParser->loadLoginUsers(*backup);
-        }, backupParser, std::ref(backup)));
+        if (sParser)
+        {
+            /* backupParser->setNotifer(std::bind([](const std::string& message, auto mainWindow) {
+                emit mainWindow->status_message(QString::fromStdString(message));
+            }, std::placeholders::_1, this)); */
+
+            sWECHAT.loadBackup();
+
+            executeAsyncActions(AsyncActions::AsyncActions_LoadUser, []() { sWECHAT.loadLoginUsers(); });
+        }
+        else
+        {
+            QMessageBox::critical(this, "Unknown Folder Type", "please select another path!!!");
+        }
     }
 }
 
 void WeChatViewerMainWindow::on_userNameListCB_activated(const QString& text)
 {
-    std::string currentUserName = text.toStdString();
-    if (((currentUser != nullptr && currentUser->UserName() != currentUserName) || (currentUser == nullptr)) && nameToIDs.count(currentUserName))
+    std::string currentDisplayName = text.toStdString();
+    if (displayToUserIDs.count(currentDisplayName))
     {
-        currentUser = &backup->getLoginUserByID(nameToIDs[currentUserName]);
-
-        userHead->setPixmap(QPixmap(QString::fromStdString(currentUser->LocalHeadImg()))
-                    .scaled(userHead->size(), Qt::KeepAspectRatio));
-
-        iTuneVersion->setText(QString::fromStdString(backup->getITuneVersion()));
-        productVersion->setText(QString::fromStdString(backup->getProductVersion()));
-        lastBackupDate->setText(QString::fromStdString(backup->getLastBackupDate()));
-
-        if (tabWidget->currentIndex() == 0)
+        if (sWECHAT.switchCurrentLoginUser(displayToUserIDs[currentDisplayName]))
         {
-            on_tabWidget_currentChanged(0);
-        }
-        else
-        {
-            tabWidget->setCurrentIndex(0);
+            iTuneVersion->setText(QString::fromStdString(sBackup->getITuneVersion()));
+            productVersion->setText(QString::fromStdString(sBackup->getProductVersion()));
+            lastBackupDate->setText(QString::fromStdString(sBackup->getLastBackupDate()));
+
+            userHead->setPixmap(ContentWidget::fromWeChatUserHeadImg(sCurrentUser).scaled(userHead->size(), Qt::KeepAspectRatio));
+
+            if (tabWidget->currentIndex() == 0)
+            {
+                on_tabWidget_currentChanged(0);
+            }
+            else
+            {
+                tabWidget->setCurrentIndex(0);
+            }
         }
     }
 }
@@ -92,18 +104,19 @@ void WeChatViewerMainWindow::on_tabWidget_currentChanged(int index)
 
 void WeChatViewerMainWindow::showOverviewWidget() {
     if (overviewWidget == nullptr) {
-        overviewWidget = new OverviewWidget(this);
+        overviewWidget = new OverviewWidget();
     }
 
-    if (currentUser && !currentUser->hasFriendData())
+    if (sCurrentUser && !sCurrentUser->hasFriendData())
     {
-        executeAsyncActions(AsyncActions::AsyncActions_LoadFriend, std::bind([](auto& user, auto backupParser) {
+        executeAsyncActions(AsyncActions::AsyncActions_LoadFriend, []() { sWECHAT.loadCurrentLoginUserFriends(); });
+        /* executeAsyncActions(AsyncActions::AsyncActions_LoadFriend, std::bind([](auto& user, auto backupParser) {
             backupParser->loadUserFriends(*user);
-        }, std::ref(currentUser), backupParser));
+        }, std::ref(currentUser), backupParser)); */
     }
     else
     {
-        overviewWidget->setCurrentUser(currentUser);
+        overviewWidget->setCurrentUser(sCurrentUser);
     }
 
     switchToSubWidget(overviewWidget);
@@ -111,20 +124,20 @@ void WeChatViewerMainWindow::showOverviewWidget() {
 
 void WeChatViewerMainWindow::showRecordsWidget() {
     if (recordsWidget == nullptr) {
-        recordsWidget = new RecordsWidget(this);
+        recordsWidget = new RecordsWidget();
     }
 
-    recordsWidget->setCurrentUser(currentUser);
+    recordsWidget->setCurrentUser(sCurrentUser);
 
     switchToSubWidget(recordsWidget);
 }
 
 void WeChatViewerMainWindow::showFriendsWidget() {
     if (friendsWidget == nullptr) {
-        friendsWidget = new FriendsWidget(this);
+        friendsWidget = new FriendsWidget();
     }
 
-    friendsWidget->setCurrentUser(currentUser);
+    friendsWidget->setCurrentUser(sCurrentUser);
 
     switchToSubWidget(friendsWidget);
 }
@@ -136,7 +149,7 @@ void WeChatViewerMainWindow::switchToSubWidget(QWidget* newWidget) {
     }
 
     auto currentTab = tabWidget->widget(tabWidget->currentIndex());
-    if (currentUser && currentTab->layout()->count() == 0)
+    if (sCurrentUser && currentTab->layout()->count() == 0)
     {
         currentTab->layout()->addWidget(newWidget);
     }
@@ -152,17 +165,17 @@ void WeChatViewerMainWindow::do_async_actions_done(AsyncActions action)
 {
     if (action == AsyncActions::AsyncActions_LoadUser)
     {
-        auto& users = backup->getLoginUsers();
+        auto& users = sWECHAT.getLoginUsers();
         for (auto& user : users)
         {
             userNameListCB->addItem(QString::fromStdString(user.second.DisplayName()));
-            nameToIDs[user.second.DisplayName()] = user.first;
+            displayToUserIDs[user.second.DisplayName()] = user.first;
         }
         on_userNameListCB_activated(userNameListCB->currentText());
     }
     else if (action == AsyncActions::AsyncActions_LoadFriend)
     {
-        overviewWidget->setCurrentUser(currentUser);
+        overviewWidget->setCurrentUser(sCurrentUser);
     }
     else if (action == AsyncActions::AsyncActions_LoadMessage)
     {

@@ -1,17 +1,17 @@
-#ifndef IOSMESSAGEPARSER_H_
-#define IOSMESSAGEPARSER_H_
+#ifndef WINMESSAGEPARSER_H_
+#define WINMESSAGEPARSER_H_
 
 #include "../MessageParser.h"
-#include "IOSBackupArchives.h"
+#include "WINBackupArchives.h"
 
-namespace wechat::parser::ios
+namespace wechat::parser::win
 {
 
-class IOSMessageParser : public MessageParser
+class WINMessageParser : public MessageParser
 {
 public:
-    explicit IOSMessageParser(const model::WeChatLoginUser& u, model::WeChatFriend& f, 
-            BackupFileParser* p, IOSBackupArchives& archives);
+    explicit WINMessageParser(const model::WeChatLoginUser& u, model::WeChatFriend& f,
+            BackupFileParser* p, WINBackupArchives& archives);
 
 private:
     void parseSender(model::WeChatMessage& msg, bool isSender) const override;
@@ -22,10 +22,12 @@ private:
     void parseByEmoticon(model::WeChatMessage& msg) const override;
     void parseByAppMsg(model::WeChatMessage& msg) const override;
     void parseBySystem(model::WeChatMessage& msg) const override;
+
     void parseByOther(model::WeChatMessage& msg) const override;
 
 private:
-    IOSBackupArchives& iosArchives;
+    WINBackupArchives&              winArchives;
+    std::vector<std::string>        usedUserNames;
 };
 
 }

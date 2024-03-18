@@ -1,18 +1,18 @@
-#ifndef IOSBACKUPPARSER_H
-#define IOSBACKUPPARSER_H
+#ifndef WINBACKUPPARSER_H
+#define WINBACKUPPARSER_H
 
 #include <string>
 #include <unordered_map>
 
 #include "../BackupFileParser.h"
 
-namespace wechat::parser::ios
+namespace wechat::parser::win
 {
 
-class IOSBackupParser : public BackupFileParser
+class WINBackupParser : public BackupFileParser
 {
 public:
-    explicit IOSBackupParser(const std::string& path);
+    explicit WINBackupParser(const std::string& path);
 
     void loadBackup(model::WeChatBackup& backup) override;
     void loadLoginUsers(model::WeChatBackup& backup) override;
@@ -26,18 +26,18 @@ public:
     std::string loadUserAudioData(const model::WeChatLoginUser* user, const model::WeChatFriend* afriend, const model::WeChatMessage& message) override;
 
 private:
-    void loadLoginUsersFromMMDB(std::unordered_map<std::string, model::WeChatLoginUser>& users);
-    void loadLoginUsersFromLoginInfo2(std::unordered_map<std::string, model::WeChatLoginUser>& users);
-    void loadLoginUserDetailsFromMMsetting(std::unordered_map<std::string, model::WeChatLoginUser>& users);
+    void loadUserFriendsFromSession(const model::WeChatLoginUser& user, std::unordered_map<std::string, model::WeChatFriend>& friends);
+    void loadUserFriendsDetailsFromMsg(const model::WeChatLoginUser& user, std::unordered_map<std::string, model::WeChatFriend>& friends);
 
-    void loadUserFriendsFromSessionDB(const std::string& userID, std::unordered_map<std::string, model::WeChatFriend>& friends);
-    void loadUserFriendsFromMessageDB(const std::string& userID, std::unordered_map<std::string, model::WeChatFriend>& friends);
-    void loadUserFriendsFromContactDB(const std::string& userID, std::unordered_map<std::string, model::WeChatFriend>& friends);
+    bool loadUserFriendFromContact(const std::string& userName, model::WeChatUser& afriend);
+    inline std::string getDBPassword(const std::string& userName);
 
 private:
-    std::string                         backupPath;
+    std::string                                     backupPath;
+    std::unordered_map<std::string, std::string>    rawKeys;
+    std::string                                     defaultPass;
 };
 
 }
 
-#endif // IOSBackupParser
+#endif // WINBACKUPPARSER_H

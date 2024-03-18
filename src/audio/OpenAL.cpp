@@ -30,13 +30,23 @@ OpenAL::~OpenAL() {
 
 static SilkSong* silksong = nullptr;
 
-void OpenAL::singlePlaySilk(const std::string& filePath)
+void OpenAL::singlePlaySilkFromPath(const std::string& filePath)
 {
     if (silksong != nullptr)
     {
         delete silksong;
     }
-    silksong = new SilkSong(filePath);
+    silksong = SilkSong::fromPath(filePath);
+    silksong->play();
+}
+
+void OpenAL::singlePlaySilkFromData(const std::string& data)
+{
+    if (silksong != nullptr)
+    {
+        delete silksong;
+    }
+    silksong = SilkSong::fromData(data);
     silksong->play();
 }
 

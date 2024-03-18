@@ -32,7 +32,6 @@ using namespace wechat::parser::ios;
 
 constexpr static char TENCENT_MANIFEST_DOMAIN[] = "AppDomain-com.tencent.xin";
 constexpr static char TENCENT_SHARED_MANIFEST_DOMAIN[] = "AppDomainGroup-group.com.tencent.xin";
-constexpr static char LOCAL_DEFAULT_HEAD_IMAGE[] = ":icon/icons/DefaultProfileHead@2x.png";
 
 IOSBackupArchives   iosArchives;
 
@@ -43,6 +42,8 @@ IOSBackupParser::IOSBackupParser(const string& path) : backupPath(path)
 
 void IOSBackupParser::loadBackup(model::WeChatBackup& backup)
 {
+    backup.setBackupType(wechat::model::BackupType::BackupType_IOS);
+
     string infoPlistContent;
     if (iosArchives.getFileContentByPath("Info.plist", infoPlistContent))
     {
@@ -87,9 +88,10 @@ void IOSBackupParser::loadLoginUsersFromLoginInfo2(unordered_map<string, model::
         unordered_map<string, string> usersFromLoginInfo2 = Protobuf::toMap(loginInfoContent);
         for (int i = 0; i < 10; ++i)
         {
-            if (usersFromLoginInfo2.count("1." + to_string(i) + ".1") != 0)
+            string userNameKey = "1." + to_string(i) + ".1.0";
+            if (usersFromLoginInfo2.count(userNameKey) != 0)
             {
-                string userName = usersFromLoginInfo2["1." + to_string(i) + ".1"];
+                string userName = usersFromLoginInfo2[userNameKey];
                 string userID = md5(userName);
 
                 if (users.count(userID) == 0)
@@ -98,8 +100,8 @@ void IOSBackupParser::loadLoginUsersFromLoginInfo2(unordered_map<string, model::
                     users[userID].setUserID(userID);
                 }
                 users[userID].setUserName(userName);
-                users[userID].setNickName(usersFromLoginInfo2["1." + to_string(i) + ".3"]);
-                users[userID].setPhone(usersFromLoginInfo2["1." + to_string(i) + ".2"]);
+                users[userID].setNickName(usersFromLoginInfo2["1." + to_string(i) + ".3.0"]);
+                users[userID].setPhone(usersFromLoginInfo2["1." + to_string(i) + ".2.0"]);
             }
         }
     }
@@ -173,23 +175,8 @@ void IOSBackupParser::loadUserFriends(WeChatLoginUser& user)
     loadUserFriendsFromMessageDB(user.UserID(), friends);
     loadUserFriendsFromContactDB(user.UserID(), friends);
 
-    int totalCount = 0, firstTime = INT_MAX, lastTime = INT_MIN;
-    for (auto& f : friends)
-    {
-        totalCount += f.second.RecordCount();
-        if (firstTime > f.second.BeginTime())
-        {
-            firstTime = f.second.BeginTime();
-        }
-        if (lastTime < f.second.LastTime())
-        {
-            lastTime = f.second.LastTime();
-        }
-    }
-    user.setRecordCount(totalCount);
-    user.setBeginTime(firstTime);
-    user.setLastTime(lastTime);
     user.setFriends(std::move(friends));
+    updateLoginUserRecord(user);
 }
 
 // Documents/{userID}/session/session.db
@@ -249,16 +236,16 @@ void IOSBackupParser::loadUserFriendsFromSessionDB(const string& userID, unorder
         if (iosArchives.getFileContentByRelativePath("Documents/" + userID + conStrRes1, content))
         {
             unordered_map<string, string> sessionInfo = Protobuf::toMap(content);
-            afriend.setNickName(sessionInfo.count("1.1.4") == 0 ? "" : sessionInfo["1.1.4"]);
-            afriend.setAliasName(sessionInfo.count("1.1.6") == 0 ? "" : sessionInfo["1.1.6"]);
-            afriend.setHeadImgUrl(sessionInfo.count("1.1.14") == 0 ? "" : sessionInfo["1.1.14"]);
-            afriend.setHeadImgUrlHD(sessionInfo.count("1.1.15") == 0 ? "" : sessionInfo["1.1.15"]);
-            afriend.setRecordCount(std::stoi(sessionInfo["2.2"]));
-            afriend.setLastTime(std::stoi(sessionInfo["2.7"]));
+            afriend.setNickName(sessionInfo.count("1.1.4.0") == 0 ? "" : sessionInfo["1.1.4.0"]);
+            afriend.setAliasName(sessionInfo.count("1.1.6.0") == 0 ? "" : sessionInfo["1.1.6.0"]);
+            afriend.setHeadImgUrl(sessionInfo.count("1.1.14.0") == 0 ? "" : sessionInfo["1.1.14.0"]);
+            afriend.setHeadImgUrlHD(sessionInfo.count("1.1.15.0") == 0 ? "" : sessionInfo["1.1.15.0"]);
+            afriend.setRecordCount(std::stoi(sessionInfo["2.2.0"]));
+            afriend.setLastTime(std::stoi(sessionInfo["2.7.0"]));
 
-            afriend.setCountry(sessionInfo.count("1.6") == 0 ? "" : sessionInfo["1.6"]);
-            afriend.setProvince(sessionInfo.count("1.7") == 0 ? "" : sessionInfo["1.7"]);
-            afriend.setCity(sessionInfo.count("1.8") == 0 ? "" : sessionInfo["1.8"]);
+            afriend.setCountry(sessionInfo.count("1.6.0") == 0 ? "" : sessionInfo["1.6.0"]);
+            afriend.setProvince(sessionInfo.count("1.7.0") == 0 ? "" : sessionInfo["1.7.0"]);
+            afriend.setCity(sessionInfo.count("1.8.0") == 0 ? "" : sessionInfo["1.8.0"]);
         }
         else
         {
@@ -322,7 +309,7 @@ void IOSBackupParser::loadUserFriendsFromMessageDB(const string& userID, unorder
             auto& infos = details::getChatRecordInfoByFriend(path, sessionID);
             if (!infos.empty())
             {
-                afriend.setDbPath(path);
+                afriend.appendDbPath(path);
                 afriend.setRecordCount(infos[0]);
                 afriend.setBeginTime(infos[1]);
                 afriend.setLastTime(infos[2]);
@@ -353,21 +340,21 @@ void IOSBackupParser::loadUserFriendsFromContactDB(const string& userID, unorder
             }
             if (f.NickName().empty())
             {
-                f.setNickName(remark["1"]);
+                f.setNickName(remark["1.0"]);
             }
             if (f.Country().empty())
             {
-                f.setCountry(profile["2"]);
+                f.setCountry(profile["2.0"]);
             }
             if (f.Province().empty())
             {
-                f.setProvince(profile["3"]);
+                f.setProvince(profile["3.0"]);
             }
             if (f.City().empty())
             {
-                f.setCity(profile["4"]);
+                f.setCity(profile["4.0"]);
             }
-            f.setRemark(profile["5"]);
+            f.setSignature(profile["5.0"]);
         }
     }
 }
@@ -378,9 +365,9 @@ void IOSBackupParser::loadGroupMembers(const WeChatLoginUser& user, WeChatFriend
     if (getFriendRecordFromDBByName(user.UserID(), afriend.UserName(), record))
     {
         unordered_map<string, string> roomData = Protobuf::toMap(record.dbContactChatRoom);
-        if (roomData.count("1"))
+        if (roomData.count("1.0"))
         {
-            auto& memberUserNames = Utils::split(roomData["1"], ";");
+            auto& memberUserNames = Utils::split(roomData["1.0"], ";");
             auto& records = getFriendRecordsFromDBByNames(user.UserID(), memberUserNames);
 
             for (auto& r : records)
@@ -390,8 +377,8 @@ void IOSBackupParser::loadGroupMembers(const WeChatLoginUser& user, WeChatFriend
                 member.setUserName(r.userName);
 
                 auto& remarks = Protobuf::toMap(r.dbContactRemark);
-                member.setNickName(remarks.count("1") == 0 ? "" : remarks["1"]);
-                member.setAliasName(remarks.count("3") == 0 ? "" : remarks["3"]);
+                member.setNickName(remarks.count("1.0") == 0 ? "" : remarks["1.0"]);
+                member.setAliasName(remarks.count("3.0") == 0 ? "" : remarks["3.0"]);
 
                 string localHeadImg;
                 if (iosArchives.getAbsolutePathByRelativePath("share/" + user.UserID() + "/session/headImg/" + member.UserID() + ".pic", localHeadImg))
@@ -404,8 +391,8 @@ void IOSBackupParser::loadGroupMembers(const WeChatLoginUser& user, WeChatFriend
                 }
 
                 auto& headImage =  Protobuf::toMap(r.dbContactHeadImage);
-                member.setHeadImgUrl(headImage.count("2") == 0 ? "" : headImage["2"]);
-                member.setHeadImgUrlHD(headImage.count("3") == 0 ? "" : headImage["3"]);
+                member.setHeadImgUrl(headImage.count("2.0") == 0 ? "" : headImage["2.0"]);
+                member.setHeadImgUrlHD(headImage.count("3.0") == 0 ? "" : headImage["3.0"]);
             }
         }
     }
@@ -421,8 +408,8 @@ void IOSBackupParser::loadGroupMember(const WeChatLoginUser& user, WeChatFriend&
         member.setUserName(record.userName);
 
         auto& remarks = Protobuf::toMap(record.dbContactRemark);
-        member.setNickName(remarks.count("1") == 0 ? "" : remarks["1"]);
-        member.setAliasName(remarks.count("3") == 0 ? "" : remarks["3"]);
+        member.setNickName(remarks.count("1.0") == 0 ? "" : remarks["1.0"]);
+        member.setAliasName(remarks.count("3.0") == 0 ? "" : remarks["3.0"]);
 
         string localHeadImg;
         if (iosArchives.getAbsolutePathByRelativePath("share/" + user.UserID() + "/session/headImg/" + member.UserID() + ".pic", localHeadImg))
@@ -435,24 +422,37 @@ void IOSBackupParser::loadGroupMember(const WeChatLoginUser& user, WeChatFriend&
         }
 
         auto& headImage =  Protobuf::toMap(record.dbContactHeadImage);
-        member.setHeadImgUrl(headImage.count("2") == 0 ? "" : headImage["2"]);
-        member.setHeadImgUrlHD(headImage.count("3") == 0 ? "" : headImage["3"]);
+        member.setHeadImgUrl(headImage.count("2.0") == 0 ? "" : headImage["2.0"]);
+        member.setHeadImgUrlHD(headImage.count("3.0") == 0 ? "" : headImage["3.0"]);
     }
 }
 
 vector<WeChatMessage> IOSBackupParser::loadFriendMessages(const WeChatLoginUser& user, WeChatFriend& afriend, int page, int countPerPage)
 {
-    if (!afriend.DbPath().empty())
+    // itune backup have only 1 db
+    if (!afriend.DbPaths().empty())
     {
-        auto& records = details::getChatRecordsByFriend(afriend.DbPath(), afriend.UserID(), page, countPerPage);
+        auto& records = details::getChatRecordsByFriend(afriend.DbPaths()[0], afriend.UserID(), page, countPerPage);
 
         IOSMessageParser        messageParser(user, afriend, this, iosArchives);
         vector<WeChatMessage>   messages(records.size());
         for (int i = 0; i < messages.size(); ++i)
         {
-            messages[i] = messageParser.parse(records[i].createTime, records[i].message, records[i].des, records[i].type, records[i].mesLocalID);
+            messages[i] = messageParser.parse("", records[i].createTime, records[i].message, records[i].des == 0, records[i].type, records[i].mesLocalID);
         }
         return messages;
     }
     return {};
+}
+
+string IOSBackupParser::loadUserHeadImgData(const model::WeChatLoginUser* user, const model::WeChatUser* userOrFriend)
+{
+    // download from HeadImgUrl or HeadImgUrlHD
+    return userOrFriend->LocalHeadImg();
+}
+
+string IOSBackupParser::loadUserAudioData(const model::WeChatLoginUser* user, const model::WeChatFriend* afriend, const model::WeChatMessage& message)
+{
+    // do nothing, can't go here
+    return "";
 }

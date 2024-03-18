@@ -3,14 +3,14 @@
 #include <iostream>
 #include <QDateTime>
 
+#include "wechat/WeChatContext.h"
 #include "wechat/model/Model.h"
 #include "wechat/parser/BackupFileParser.h"
-#include "WeChatViewerMainWindow.h"
 #include "ContentWidget.h"
 
 static constexpr int UserRole_USER_ID = Qt::UserRole + 1;
 
-RecordsWidget::RecordsWidget(WeChatViewerMainWindow* window, QWidget* parent) : QWidget(parent), mainWindow(window)
+RecordsWidget::RecordsWidget(QWidget* parent) : QWidget(parent)
 {
     setupUi(this);
 
@@ -83,8 +83,8 @@ void RecordsWidget::updateRecordView()
 
 void RecordsWidget::updateBasic()
 {
-    friendImage->setPixmap(QPixmap(QString::fromStdString(currentFriend->LocalHeadImg()))
-                .scaled(friendImage->size(), Qt::KeepAspectRatio));
+    friendImage->setPixmap(ContentWidget::fromWeChatUserHeadImg(currentFriend).scaled(friendImage->size(), Qt::KeepAspectRatio));
+
     friendName->setText(QString::fromStdString(currentFriend->DisplayName()));
     friendTotal->setText(QString::number(currentFriend->RecordCount()));
     friendStartDate->setText(QDateTime::fromSecsSinceEpoch(currentFriend->BeginTime()).toString("yyyy-MM-dd hh:mm:ss"));
@@ -133,7 +133,7 @@ void RecordsWidget::updateTableView()
 {
     itemModel->removeRows(0, itemModel->rowCount());
 
-    auto& messages = mainWindow->backupParser->loadFriendMessages(*currentUser, *currentFriend, page.index, page.count);
+    auto& messages = sParser->loadFriendMessages(*currentUser, *currentFriend, page.index, page.count);
     for (int i = 0; i < messages.size(); ++i)
     {
         auto& message = messages[i];
@@ -142,7 +142,7 @@ void RecordsWidget::updateTableView()
 
         auto sender = message.getSender();
         auto itemIcon = new QStandardItem();
-        itemIcon->setIcon(QIcon(QString::fromStdString(sender->LocalHeadImg())));
+        itemIcon->setIcon(QIcon(ContentWidget::fromWeChatUserHeadImg(sender)));
         auto itemName = new QStandardItem(QString::fromStdString(sender->DisplayName()));
         itemList << itemIcon << itemName;
 
@@ -154,7 +154,7 @@ void RecordsWidget::updateTableView()
 
         itemModel->appendRow(itemList);
 
-        recordsTable->setIndexWidget(itemModel->index(i, 2), ContentWidget::createWidget(message));
+        recordsTable->setIndexWidget(itemModel->index(i, 2), ContentWidget::createWidget(currentFriend, message));
     }
 
     recordsTable->resizeRowsToContents();
@@ -170,7 +170,7 @@ void RecordsWidget::on_friendsList_itemClicked(QListWidgetItem* item)
         // load group members
         if (!currentFriend->hasMemberData())
         {
-            mainWindow->backupParser->loadGroupMembers(*currentUser, *currentFriend);
+            sParser->loadGroupMembers(*currentUser, *currentFriend);
         }
     }
 
@@ -216,7 +216,7 @@ void RecordsWidget::on_pageNums_activated(const QString& text)
 
 void RecordsWidget::on_itemsPerPage_activated(const QString& text)
 {
-    if (text.toInt() != page.count)
+    if (currentFriend && text.toInt() != page.count)
     {
         page.index = 1;
         page.count = text.toInt();

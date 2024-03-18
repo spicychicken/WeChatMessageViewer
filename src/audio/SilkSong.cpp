@@ -10,9 +10,20 @@ using audio::SilkSong;
 
 constexpr static uint32_t SAMPLING_RATE = 24000;
 
-SilkSong::SilkSong(const std::string& path) {
+SilkSong* SilkSong::fromPath(const std::string& path)
+{
+    string data = Utils::readBinaryFile(path);
+    return new SilkSong(data);
+}
+
+SilkSong* SilkSong::fromData(const std::string& data)
+{
+    return new SilkSong(data);
+}
+
+SilkSong::SilkSong(const std::string& data) {
     initialAL();
-    loadFromSilk(path);
+    loadFromData(data);
 }
 
 SilkSong::~SilkSong() {
@@ -30,11 +41,10 @@ void SilkSong::initialAL()
     alDopplerVelocity(1.0f);
 }
 
-void SilkSong::loadFromSilk(const string& path)
+void SilkSong::loadFromData(const string& data)
 {
-    string silk = Utils::readBinaryFile(path);
     string pcm;
-    if (audio::convert::silkToPcm(silk, pcm) == 0)
+    if (audio::convert::silkToPcm(data, pcm) == 0)
     {
         alGenBuffers((ALuint)1, &buffer);
         alBufferData(buffer, AL_FORMAT_MONO16, (const ALvoid*)pcm.c_str(), pcm.length(), SAMPLING_RATE);

@@ -15,19 +15,25 @@ class MessageParser
 public:
     MessageParser(const model::WeChatLoginUser& u, model::WeChatFriend& f, BackupFileParser* p);
 
-    model::WeChatMessage parse(int createTime, const std::string& message, int des, int type, const std::string& resID) const;
+    model::WeChatMessage parse(const std::string& msgSvrID, int createTime, const std::string& content, bool isSender, int type, const std::string& extra) const;
 
 protected:
-    void parseBasic(model::WeChatMessage& msg, int createTime, const std::string& message, int des, int type, const std::string& resID) const;
+    void parseBasic(model::WeChatMessage& msg, const std::string& msgSvrID, int createTime, const std::string& content, bool isSender, int type, const std::string& extra) const;
     void parseByType(model::WeChatMessage& msg) const;
-    
-    virtual void parseByText(model::WeChatMessage& msg) const;
-    virtual void parseByImage(model::WeChatMessage& msg) const;
-    virtual void parseByAudio(model::WeChatMessage& msg) const;
-    virtual void parseByVideo(model::WeChatMessage& msg) const;
-    virtual void parseByEmoticon(model::WeChatMessage& msg) const;
-    virtual void parseByAppMsg(model::WeChatMessage& msg) const;
-    virtual void parseBySystem(model::WeChatMessage& msg) const;
+
+    virtual void parseSender(model::WeChatMessage& msg, bool isSender) const = 0;
+    virtual void parseByText(model::WeChatMessage& msg) const = 0;
+    virtual void parseByImage(model::WeChatMessage& msg) const = 0;
+    virtual void parseByAudio(model::WeChatMessage& msg) const = 0;
+    virtual void parseByVideo(model::WeChatMessage& msg) const = 0;
+    virtual void parseByEmoticon(model::WeChatMessage& msg) const = 0;
+    virtual void parseByAppMsg(model::WeChatMessage& msg) const = 0;
+    virtual void parseBySystem(model::WeChatMessage& msg) const = 0;
+
+    virtual void parseByOther(model::WeChatMessage& msg) const = 0;
+
+protected:
+    const model::WeChatUser* getSenderByName(const std::string& senderName) const;
 
 protected:
     model::WeChatFriend&                afriend;
