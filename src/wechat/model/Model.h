@@ -132,7 +132,7 @@ public:
 
     bool memberExist(const std::string& memberID) const   { return members.count(memberID); }
 
-    model::WeChatFriend& WeChatFriend::getMember(const std::string& memberID);
+    model::WeChatFriend& getMember(const std::string& memberID);
     const model::WeChatFriend& getMember(const std::string& memberID) const;
 
     // std::string DbPath() const                      { return dbPath; }

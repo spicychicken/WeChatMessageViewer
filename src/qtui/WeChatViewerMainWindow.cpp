@@ -7,8 +7,6 @@
 #include <future>
 #include <functional>
 
-#include <fmt/core.h>
-
 #include "OverviewWidget.h"
 #include "RecordsWidget.h"
 #include "FriendsWidget.h"
