@@ -133,7 +133,7 @@ void RecordsWidget::updateTableView()
 {
     itemModel->removeRows(0, itemModel->rowCount());
 
-    auto& messages = sParser->loadFriendMessages(*currentUser, *currentFriend, page.index, page.count);
+    auto messages = sParser->loadFriendMessages(*currentUser, *currentFriend, page.index, page.count);
     for (int i = 0; i < messages.size(); ++i)
     {
         auto& message = messages[i];

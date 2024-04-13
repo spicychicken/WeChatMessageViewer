@@ -61,7 +61,7 @@ void OverviewWidget::updateDisplay()
     userRecordEndDate->setText(QDateTime::fromSecsSinceEpoch(currentUser->LastTime()).toString("yyyy-MM-dd hh:mm:ss"));
 
     // top 10 chat to friend
-    auto& friends = currentUser->getTopFriends(wechat::model::UserType::UserType_Friend, 10, [](auto& a, auto&b) {
+    auto friends = currentUser->getTopFriends(wechat::model::UserType::UserType_Friend, 10, [](auto& a, auto&b) {
         return a.RecordCount() > b.RecordCount();
     });
     updateListWidget(topFriendContact, friends);

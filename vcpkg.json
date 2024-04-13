@@ -1,9 +1,12 @@
 {
     "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
     "dependencies": [
-      "Protobuf",
+      "protobuf",
       "tinyxml2",
       "libplist",
-      "sqlite3"
+      "sqlite3",
+      "jsoncpp",
+      "openal-soft",
+      "sqlcipher"
     ]
   }

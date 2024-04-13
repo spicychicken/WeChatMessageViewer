@@ -1,11 +1,13 @@
 #include "details.h"
 
 #include <iostream>
+#include <codecvt>
 
 #include <Windows.h>
 #include <tlhelp32.h>   // tool help library
 
 using std::string;
+using std::wstring;
 using std::vector;
 using std::tuple;
 using std::unordered_map;
@@ -16,6 +18,16 @@ unordered_map<string, unsigned long> offsetOfRawKey = {
     {"3.9.8.25", 0x3DFDAD0},
     {"3.9.9.43", 0x40E9F90}
 };
+
+wstring s2ws(const string& s) {
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.from_bytes(s);
+}
+
+string w2ss(const wstring& s) {
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.to_bytes(s);
+}
 
 static DWORD getProcessIDByName(const string& name)
 {
@@ -28,7 +40,7 @@ static DWORD getProcessIDByName(const string& name)
     {
         do
         {
-            if (string(processInfo.szExeFile).find(name) != string::npos)
+            if (wstring(processInfo.szExeFile).find(s2ws(name)) != wstring::npos)
             {
                 processID = processInfo.th32ProcessID;
                 break;
@@ -70,9 +82,9 @@ static tuple<string, BYTE*> getWeChatWinDllVersionAndBaseAddr(DWORD wechatProces
     BYTE* baseAddr = nullptr;
     if (Module32First(hSnapShot, &moduleInfo)) {
         do {
-            if (string(moduleInfo.szModule) == "WeChatWin.dll") {
+            if (w2ss(moduleInfo.szModule) == "WeChatWin.dll") {
                 // version = moduleInfo
-                version = getFileVersionInfoByPath(moduleInfo.szExePath);
+                version = getFileVersionInfoByPath(w2ss(moduleInfo.szExePath));
                 baseAddr = moduleInfo.modBaseAddr;
                 break;
             }

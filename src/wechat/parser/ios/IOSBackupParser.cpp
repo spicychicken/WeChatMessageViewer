@@ -252,7 +252,7 @@ void IOSBackupParser::loadUserFriendsFromSessionDB(const string& userID, unorder
             details::FriendRecord record;
             if (getFriendRecordFromDBByName(userID, afriend.UserName(), record))
             {
-                auto& remarks = Protobuf::toMap(record.dbContactRemark);
+                auto remarks = Protobuf::toMap(record.dbContactRemark);
                 afriend.setNickName(remarks.count("1") == 0 ? "" : remarks["1"]);
                 afriend.setAliasName(remarks.count("3") == 0 ? "" : remarks["3"]);
             }
@@ -306,7 +306,7 @@ void IOSBackupParser::loadUserFriendsFromMessageDB(const string& userID, unorder
             WeChatFriend& afriend = friends[sessionID];
             afriend.setUserID(sessionID);
 
-            auto& infos = details::getChatRecordInfoByFriend(path, sessionID);
+            auto infos = details::getChatRecordInfoByFriend(path, sessionID);
             if (!infos.empty())
             {
                 afriend.appendDbPath(path);
@@ -367,8 +367,8 @@ void IOSBackupParser::loadGroupMembers(const WeChatLoginUser& user, WeChatFriend
         unordered_map<string, string> roomData = Protobuf::toMap(record.dbContactChatRoom);
         if (roomData.count("1.0"))
         {
-            auto& memberUserNames = Utils::split(roomData["1.0"], ";");
-            auto& records = getFriendRecordsFromDBByNames(user.UserID(), memberUserNames);
+            auto memberUserNames = Utils::split(roomData["1.0"], ";");
+            auto records = getFriendRecordsFromDBByNames(user.UserID(), memberUserNames);
 
             for (auto& r : records)
             {
@@ -376,7 +376,7 @@ void IOSBackupParser::loadGroupMembers(const WeChatLoginUser& user, WeChatFriend
                 WeChatFriend& member = afriend.getMember(memberID);
                 member.setUserName(r.userName);
 
-                auto& remarks = Protobuf::toMap(r.dbContactRemark);
+                auto remarks = Protobuf::toMap(r.dbContactRemark);
                 member.setNickName(remarks.count("1.0") == 0 ? "" : remarks["1.0"]);
                 member.setAliasName(remarks.count("3.0") == 0 ? "" : remarks["3.0"]);
 
@@ -390,7 +390,7 @@ void IOSBackupParser::loadGroupMembers(const WeChatLoginUser& user, WeChatFriend
                     member.setLocalHeadImg(LOCAL_DEFAULT_HEAD_IMAGE);
                 }
 
-                auto& headImage =  Protobuf::toMap(r.dbContactHeadImage);
+                auto headImage =  Protobuf::toMap(r.dbContactHeadImage);
                 member.setHeadImgUrl(headImage.count("2.0") == 0 ? "" : headImage["2.0"]);
                 member.setHeadImgUrlHD(headImage.count("3.0") == 0 ? "" : headImage["3.0"]);
             }
@@ -407,7 +407,7 @@ void IOSBackupParser::loadGroupMember(const WeChatLoginUser& user, WeChatFriend&
         WeChatFriend& member = afriend.getMember(memberID);
         member.setUserName(record.userName);
 
-        auto& remarks = Protobuf::toMap(record.dbContactRemark);
+        auto remarks = Protobuf::toMap(record.dbContactRemark);
         member.setNickName(remarks.count("1.0") == 0 ? "" : remarks["1.0"]);
         member.setAliasName(remarks.count("3.0") == 0 ? "" : remarks["3.0"]);
 
@@ -421,7 +421,7 @@ void IOSBackupParser::loadGroupMember(const WeChatLoginUser& user, WeChatFriend&
             member.setLocalHeadImg(LOCAL_DEFAULT_HEAD_IMAGE);
         }
 
-        auto& headImage =  Protobuf::toMap(record.dbContactHeadImage);
+        auto headImage =  Protobuf::toMap(record.dbContactHeadImage);
         member.setHeadImgUrl(headImage.count("2.0") == 0 ? "" : headImage["2.0"]);
         member.setHeadImgUrlHD(headImage.count("3.0") == 0 ? "" : headImage["3.0"]);
     }
@@ -432,7 +432,7 @@ vector<WeChatMessage> IOSBackupParser::loadFriendMessages(const WeChatLoginUser&
     // itune backup have only 1 db
     if (!afriend.DbPaths().empty())
     {
-        auto& records = details::getChatRecordsByFriend(afriend.DbPaths()[0], afriend.UserID(), page, countPerPage);
+        auto records = details::getChatRecordsByFriend(afriend.DbPaths()[0], afriend.UserID(), page, countPerPage);
 
         IOSMessageParser        messageParser(user, afriend, this, iosArchives);
         vector<WeChatMessage>   messages(records.size());

@@ -1,6 +1,7 @@
 #include "wechat/model/Model.h"
 
 #include <algorithm>
+#include <iterator>
 
 using std::vector;
 using std::string;

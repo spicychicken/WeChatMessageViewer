@@ -3,11 +3,10 @@ cmake_minimum_required(VERSION 3.1.0)
 # Project
 project(WeChatMessageViewer VERSION 0.1 LANGUAGES C CXX)
 
-find_package(Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
+find_package(Qt6 COMPONENTS Widgets LinguistTools REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_package(tinyxml2 CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
 find_package(unofficial-libplist CONFIG REQUIRED)
 find_package(jsoncpp CONFIG REQUIRED)
 
@@ -81,13 +80,12 @@ if(WIN32)
 endif()
 
 target_link_libraries(WeChatMessageViewer PRIVATE 
-                Qt5::Widgets
+                Qt6::Widgets
                 protobuf::libprotoc
                 protobuf::libprotobuf
                 protobuf::libprotobuf-lite
                 unofficial::sqlite3::sqlite3
                 tinyxml2::tinyxml2
-                fmt::fmt-header-only
                 OpenAL::OpenAL
                 JsonCpp::JsonCpp
                 unofficial::libplist::libplist
