@@ -5,7 +5,7 @@
 #include "qtui/WeChatViewerMainWindow.h"
 
 int main(int argc, char *argv[]) {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     QTranslator translator;
     /* const QStringList uiLanguages = QLocale::system().uiLanguages();
