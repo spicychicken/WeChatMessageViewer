@@ -18,6 +18,8 @@
 #include "constants.h"
 #include "functions/Utils.h"
 
+#include "audio/OpenAL.h"
+
 WeChatViewerMainWindow::WeChatViewerMainWindow(QWidget *parent) : QMainWindow(parent)
 {
     setupUi(this);
@@ -26,13 +28,10 @@ WeChatViewerMainWindow::WeChatViewerMainWindow(QWidget *parent) : QMainWindow(pa
 
     connect(this, SIGNAL(status_message(const QString&)), this, SLOT(do_status_message(const QString&)), Qt::ConnectionType::QueuedConnection);
     connect(this, SIGNAL(async_actions_done(AsyncActions)), this, SLOT(do_async_actions_done(AsyncActions)), Qt::ConnectionType::QueuedConnection);
-
-    // backup = new wechat::model::WeChatBackup();
 }
 
 WeChatViewerMainWindow::~WeChatViewerMainWindow()
 {
-    // delete backup;
 }
 
 void WeChatViewerMainWindow::on_selectBKFileBtn_clicked()
@@ -44,10 +43,6 @@ void WeChatViewerMainWindow::on_selectBKFileBtn_clicked()
 
         if (sParser)
         {
-            /* backupParser->setNotifer(std::bind([](const std::string& message, auto mainWindow) {
-                emit mainWindow->status_message(QString::fromStdString(message));
-            }, std::placeholders::_1, this)); */
-
             sWECHAT.loadBackup();
 
             executeAsyncActions(AsyncActions::AsyncActions_LoadUser, []() { sWECHAT.loadLoginUsers(); });
@@ -108,9 +103,6 @@ void WeChatViewerMainWindow::showOverviewWidget() {
     if (sCurrentUser && !sCurrentUser->hasFriendData())
     {
         executeAsyncActions(AsyncActions::AsyncActions_LoadFriend, []() { sWECHAT.loadCurrentLoginUserFriends(); });
-        /* executeAsyncActions(AsyncActions::AsyncActions_LoadFriend, std::bind([](auto& user, auto backupParser) {
-            backupParser->loadUserFriends(*user);
-        }, std::ref(currentUser), backupParser)); */
     }
     else
     {

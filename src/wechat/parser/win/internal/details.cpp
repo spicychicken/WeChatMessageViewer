@@ -16,7 +16,8 @@ using namespace wechat::parser::win;
 
 unordered_map<string, unsigned long> offsetOfRawKey = {
     {"3.9.8.25", 0x3DFDAD0},
-    {"3.9.9.43", 0x40E9F90}
+    {"3.9.9.43", 0x40E9F90},
+    {"3.9.10.27", 0x5AB8590}
 };
 
 wstring s2ws(const string& s) {

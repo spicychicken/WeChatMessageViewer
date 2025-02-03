@@ -70,8 +70,8 @@ void WINMessageParser::parseByImage(model::WeChatMessage& msg) const
     }
     else
     {
-        msg.setThumb(winArchives.correctPath(user.UserName(), results["3.2.2"]));
-        msg.setSrc(winArchives.correctPath(user.UserName(), results["3.2.1"]));
+        msg.setThumb(winArchives.correctPath(user.UserName(), results["3.2.3"]));
+        msg.setSrc(winArchives.correctPath(user.UserName(), results["3.2.2"]));
     }
 }
 
