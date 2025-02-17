@@ -203,7 +203,7 @@ void RecordsWidget::on_nextBtn_clicked()
     }
 }
 
-void RecordsWidget::on_pageNums_activated(const QString& text)
+void RecordsWidget::on_pageNums_textActivated(const QString& text)
 {
     if (text.toInt() != page.index)
     {
@@ -214,7 +214,7 @@ void RecordsWidget::on_pageNums_activated(const QString& text)
     }
 }
 
-void RecordsWidget::on_itemsPerPage_activated(const QString& text)
+void RecordsWidget::on_itemsPerPage_textActivated(const QString& text)
 {
     if (currentFriend && text.toInt() != page.count)
     {

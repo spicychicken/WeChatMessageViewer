@@ -54,7 +54,7 @@ void WeChatViewerMainWindow::on_selectBKFileBtn_clicked()
     }
 }
 
-void WeChatViewerMainWindow::on_userNameListCB_activated(const QString& text)
+void WeChatViewerMainWindow::on_userNameListCB_textActivated(const QString& text)
 {
     std::string currentDisplayName = text.toStdString();
     if (displayToUserIDs.count(currentDisplayName))
@@ -161,7 +161,7 @@ void WeChatViewerMainWindow::do_async_actions_done(AsyncActions action)
             userNameListCB->addItem(QString::fromStdString(user.second.DisplayName()));
             displayToUserIDs[user.second.DisplayName()] = user.first;
         }
-        on_userNameListCB_activated(userNameListCB->currentText());
+        on_userNameListCB_textActivated(userNameListCB->currentText());
     }
     else if (action == AsyncActions::AsyncActions_LoadFriend)
     {

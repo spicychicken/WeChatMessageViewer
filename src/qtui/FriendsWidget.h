@@ -26,8 +26,8 @@ private slots:
     void on_prevBtn_clicked();
     void on_nextBtn_clicked();
 
-    void on_pageNums_activated(const QString& text);
-    void on_itemsPerPage_activated(const QString& text);
+    void on_pageNums_textActivated(const QString& text);
+    void on_itemsPerPage_textActivated(const QString& text);
 
 private:
     void updateWidget();

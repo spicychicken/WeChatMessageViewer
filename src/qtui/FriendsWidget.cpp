@@ -186,7 +186,7 @@ void FriendsWidget::on_nextBtn_clicked()
     }
 }
 
-void FriendsWidget::on_pageNums_activated(const QString& text)
+void FriendsWidget::on_pageNums_textActivated(const QString& text)
 {
     if (text.toInt() != page.index)
     {
@@ -197,7 +197,7 @@ void FriendsWidget::on_pageNums_activated(const QString& text)
     }
 }
 
-void FriendsWidget::on_itemsPerPage_activated(const QString& text)
+void FriendsWidget::on_itemsPerPage_textActivated(const QString& text)
 {
     if (text.toInt() != page.count)
     {

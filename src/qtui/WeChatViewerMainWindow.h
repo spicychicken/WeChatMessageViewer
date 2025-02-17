@@ -47,7 +47,7 @@ signals:
 
 private slots:
     void on_selectBKFileBtn_clicked();
-    void on_userNameListCB_activated(const QString& text);
+    void on_userNameListCB_textActivated(const QString& text);
     void on_tabWidget_currentChanged(int index);
 
     void do_status_message(const QString& message);
