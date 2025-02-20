@@ -21,12 +21,14 @@ SilkSong* SilkSong::fromData(const std::string& data)
     return new SilkSong(data);
 }
 
-SilkSong::SilkSong(const std::string& data) {
+SilkSong::SilkSong(const std::string& data)
+{
     initialAL();
     loadFromData(data);
 }
 
-SilkSong::~SilkSong() {
+SilkSong::~SilkSong()
+{
     close();
 }
 
@@ -53,7 +55,8 @@ void SilkSong::loadFromData(const string& data)
     }
 }
 
-void SilkSong::close() {
+void SilkSong::close()
+{
     alSourceStop(source);
     alDeleteSources(1, &source);
     if (loaded)
@@ -62,12 +65,14 @@ void SilkSong::close() {
     }
 }
 
-void SilkSong::play() {
+void SilkSong::play()
+{
     alSourceRewind(source);
     alSourcePlay(source);
 }
 
-void SilkSong::stop() {
+void SilkSong::stop()
+{
     alSourceStop(source);
 }
 

@@ -16,6 +16,7 @@
 #include "internal/details.h"
 
 using std::string;
+using std::vector;
 using std::unordered_map;
 using std::to_string;
 using std::vector;
@@ -40,7 +41,7 @@ IOSBackupParser::IOSBackupParser(const string& path) : backupPath(path)
     iosArchives.setArchivesPath(backupPath);
 }
 
-void IOSBackupParser::loadBackup(model::WeChatBackup& backup)
+bool IOSBackupParser::loadBackup(model::WeChatBackup& backup)
 {
     backup.setBackupType(wechat::model::BackupType::BackupType_IOS);
 
@@ -49,10 +50,34 @@ void IOSBackupParser::loadBackup(model::WeChatBackup& backup)
     {
         auto infoPlist = Plist::toMap(infoPlistContent);
 
-        backup.setITuneVersion(infoPlist["iTunes Version"]);
-        backup.setProductVersion(infoPlist["Product Version"]);
-        backup.setLastBackupDate(infoPlist["Last Backup Date"]);
+        // [To-Do] change to metadatas
+        // backup.setITuneVersion(infoPlist["iTunes Version"]);
+        // backup.setProductVersion(infoPlist["Product Version"]);
+        // backup.setLastBackupDate(infoPlist["Last Backup Date"]);
+        return true;
     }
+    return false;
+}
+
+vector<string> IOSBackupParser::listLoginUsers(WeChatBackup& backup)
+{
+    unordered_map<string, WeChatLoginUser> users;
+    loadLoginUsersFromMMDB(users);
+    loadLoginUsersFromLoginInfo2(users);
+
+    vector<string>    loginUserNames;
+    for (const auto& pair : users)
+    {
+        loginUserNames.push_back(pair.second.UserName());
+    }
+    return loginUserNames;
+}
+
+WeChatLoginUser& IOSBackupParser::loadLoginUser(model::WeChatBackup& backup, const std::string& loginUserName, const std::string& secretKey)
+{
+    // [To-Do] refine later
+    loadLoginUsers(backup);
+    return backup.getLoginUserByID(md5(loginUserName));
 }
 
 void IOSBackupParser::loadLoginUsers(WeChatBackup& backup)
@@ -445,13 +470,13 @@ vector<WeChatMessage> IOSBackupParser::loadFriendMessages(const WeChatLoginUser&
     return {};
 }
 
-string IOSBackupParser::loadUserHeadImgData(const model::WeChatLoginUser* user, const model::WeChatUser* userOrFriend)
+string IOSBackupParser::loadUserHeadImgData(const model::WeChatLoginUser& user, const model::WeChatUser& userOrFriend)
 {
     // download from HeadImgUrl or HeadImgUrlHD
-    return userOrFriend->LocalHeadImg();
+    return userOrFriend.LocalHeadImg();
 }
 
-string IOSBackupParser::loadUserAudioData(const model::WeChatLoginUser* user, const model::WeChatFriend* afriend, const model::WeChatMessage& message)
+string IOSBackupParser::loadUserAudioData(const model::WeChatLoginUser& user, const model::WeChatFriend& afriend, const model::WeChatMessage& message)
 {
     // do nothing, can't go here
     return "";

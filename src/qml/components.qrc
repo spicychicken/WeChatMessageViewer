@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/qml">
+        <file alias="ThemeEngine.qml">components/ThemeEngine.qml</file>
+        <file alias="WeChatEngine.qml">components/WeChatEngine.qml</file>
+        <file alias="DesktopSidebarItem.qml">components/DesktopSidebarItem.qml</file>
+        <file alias="IconSvg.qml">components/IconSvg.qml</file>
+        <file alias="SectionTitle.qml">components/SectionTitle.qml</file>
+        <file alias="TextFieldThemed.qml">components/TextFieldThemed.qml</file>
+        <file alias="WeChatInfos.qml">components/WeChatInfos.qml</file>
+        <file alias="WeChatMessages.qml">components/WeChatMessages.qml</file>
+        <file alias="WeChatFriends.qml">components/WeChatFriends.qml</file>
+    </qresource>
+</RCC>

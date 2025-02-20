@@ -9,7 +9,8 @@
 namespace audio
 {
 
-class OpenAL {
+class OpenAL
+{
 public:
     OpenAL();
     ~OpenAL();

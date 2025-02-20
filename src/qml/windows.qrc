@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/qml">
+    <file alias="wcmv_mainwindow.qml">windows/wcmv_mainwindow.qml</file>
+    <file alias="wcmv_loginuserlist.qml">windows/wcmv_loginuserlist.qml</file>
+  </qresource>
+</RCC>

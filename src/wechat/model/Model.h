@@ -172,14 +172,18 @@ public:
 
     const std::vector<model::WeChatFriend>& getFriends() const      { return friends; }
 
+    void setSecretKey(const std::string& secretKey)     { this->secretKey = secretKey; }
+    const std::string getSecretKey() const              { return secretKey; }
+
 private:
     std::vector<model::WeChatFriend>            friends;
     std::unordered_map<std::string, int>        idToIndexs;
+    std::string                                 secretKey;
 };
 
 enum class BackupType
 {
-    BackupType_IOS,
+    BackupType_IOS = 0,
     BackupType_WIN,
     BackupType_UNKNOWN,
 };
@@ -189,9 +193,6 @@ class WeChatBackup
 public:
     void setBackupType(BackupType type)                               { backupType = type; }
     void setBackupPath(const std::string& path)                       { backupPath = path; }
-    void setITuneVersion(const std::string& version)                  { iTuneVersion = version; }
-    void setProductVersion(const std::string& version)                { productVersion = version; }
-    void setLastBackupDate(const std::string& date)                   { lastBackupDate = date; }
 
     void setLoginUsers(std::unordered_map<std::string, model::WeChatLoginUser>&& loginUsers)    { this->loginUsers = loginUsers; }
 
@@ -199,16 +200,14 @@ public:
     model::WeChatLoginUser& getLoginUserByID(const std::string& userID);
 
     const std::unordered_map<std::string, model::WeChatLoginUser> getLoginUsers() const         { return loginUsers; }
-    std::string getITuneVersion() const                 { return iTuneVersion; }
-    std::string getProductVersion() const               { return productVersion; }
-    std::string getLastBackupDate() const               { return lastBackupDate; }
+
     BackupType getBackupType() const                    { return backupType; }
 
 private:
     std::unordered_map<std::string, model::WeChatLoginUser>     loginUsers;
-    std::string                     iTuneVersion;
-    std::string                     productVersion;
-    std::string                     lastBackupDate;
+
+    // iOS: iTuneVersion, productVersion, lastBackupDate
+    std::unordered_map<std::string, std::string>        metedatas;
 
     std::string                     backupPath;
     BackupType                      backupType;

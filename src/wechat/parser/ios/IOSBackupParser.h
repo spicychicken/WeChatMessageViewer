@@ -14,7 +14,10 @@ class IOSBackupParser : public BackupFileParser
 public:
     explicit IOSBackupParser(const std::string& path);
 
-    void loadBackup(model::WeChatBackup& backup) override;
+    bool loadBackup(model::WeChatBackup& backup) override;
+    std::vector<std::string> listLoginUsers(model::WeChatBackup& backup) override;
+    model::WeChatLoginUser& loadLoginUser(model::WeChatBackup& backup, const std::string& loginUserName, const std::string& secretKey = "") override;
+
     void loadLoginUsers(model::WeChatBackup& backup) override;
     void loadUserFriends(model::WeChatLoginUser& user) override;
 
@@ -22,8 +25,8 @@ public:
     void loadGroupMember(const model::WeChatLoginUser& user, model::WeChatFriend& afriend, const std::string& memberName) override;
     std::vector<model::WeChatMessage> loadFriendMessages(const model::WeChatLoginUser& user, model::WeChatFriend& afriend, int page, int countPerPage = 20) override;
 
-    std::string loadUserHeadImgData(const model::WeChatLoginUser* user, const model::WeChatUser* userOrFriend) override;
-    std::string loadUserAudioData(const model::WeChatLoginUser* user, const model::WeChatFriend* afriend, const model::WeChatMessage& message) override;
+    std::string loadUserHeadImgData(const model::WeChatLoginUser& user, const model::WeChatUser& userOrFriend) override;
+    std::string loadUserAudioData(const model::WeChatLoginUser& user, const model::WeChatFriend& afriend, const model::WeChatMessage& message) override;
 
 private:
     void loadLoginUsersFromMMDB(std::unordered_map<std::string, model::WeChatLoginUser>& users);
