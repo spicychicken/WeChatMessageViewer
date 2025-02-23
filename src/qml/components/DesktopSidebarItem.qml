@@ -109,7 +109,7 @@ T.Button {
                     width: 20; height: 20;
                     anchors.centerIn: parent
                     source: control.indicatorSource
-                    color: Theme.colorLowContrast
+                    // color: Theme.colorLowContrast
 
                     NumberAnimation on rotation {
                         running: control.indicatorAnimated

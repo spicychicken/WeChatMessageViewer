@@ -90,6 +90,17 @@ ApplicationWindow {
                                 }, function() {
                                     appSidebar.visible = true
                                     appContent.visible = true
+
+                                    // change head
+                                    if (WeChat.currentLoginUser["headImgHD"] != "") {
+                                        userHeadImg.source = WeChat.currentLoginUser["headImgHD"]
+                                    }
+                                    else if (WeChat.currentLoginUser["headImg"] != "") {
+                                        userHeadImg.source = WeChat.currentLoginUser["headImg"]
+                                    }
+                                    else {
+                                        userHeadImg.source = WeChat.defaultHeadImg
+                                    }
                                 });
                             })
                         }
@@ -129,9 +140,10 @@ ApplicationWindow {
 
             // head image
             DesktopSidebarItem {
-                source: "qrc:/assets/images/DefaultProfileHead@2x.png"
-                sourceSize: 40
-                highlightMode: "indicator"
+                id: userHeadImg
+                source: WeChat.defaultHeadImg
+                sourceSize: 54
+                highlightMode: "content"
 
                 // onClicked: screenDesktopComponents.loadScreen()
             }

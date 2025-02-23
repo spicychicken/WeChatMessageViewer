@@ -8,9 +8,15 @@ import WeChatEngine
 
 Window {
     id: loginUserListWindow
+
     width: 500
     height: 400
-    opacity: 0.9
+    minimumWidth: width
+    minimumHeight: height
+    maximumWidth: width
+    maximumHeight: height
+
+    // opacity: 0.9
     title: {
         if (WeChat.openFolderBackupType == WeChatEngine.BackupType_IOS) {
             return "IOS Backup"
@@ -44,6 +50,7 @@ Window {
 
             ListView {
                 id: userListView
+                currentIndex: -1
                 Layout.preferredWidth: parent.width
                 Layout.fillHeight: true
                 Layout.alignment: Qt.AlignRight
@@ -51,7 +58,9 @@ Window {
                 clip: false
                 interactive: true
 
-                ScrollBar.vertical: ScrollBar { visible: userListView.count > 20 }
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AsNeeded
+                }
 
                 model: WeChat.listLoginUsers()
                 delegate: Rectangle {
@@ -79,6 +88,8 @@ Window {
                     }
 
                     MouseArea {
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
                         anchors.fill: parent
                         onClicked: {
                             userListView.currentIndex = index;
@@ -112,6 +123,15 @@ Window {
                 placeholderText: qsTr("Secret Key")
             }
 
+            CheckBox {
+                visible: WeChat.openFolderBackupType == WeChatEngine.BackupType_WIN
+                id: automateDetected
+                onClicked: {
+                    wechatSecretKey.enabled = !wechatSecretKey.enabled
+                }
+                text: qsTr("Automate detected Secret Key\nplease make sure WeChat App is opened and logined with user you selected !!!")
+            }
+
             RowLayout {
                 spacing: 20
                 Layout.alignment: Qt.AlignCenter
@@ -122,13 +142,18 @@ Window {
                     implicitHeight: Theme.componentHeight
                     text: qsTr("Confirm")
                     enabled: {
-                        if (WeChat.openFolderBackupType == WeChatEngine.BackupType_WIN && wechatSecretKey.text == "") {
+                        if (WeChat.openFolderBackupType == WeChatEngine.BackupType_WIN && automateDetected.checkState != Qt.Checked && wechatSecretKey.text == "") {
                             return false
                         }
                         return userListView.currentIndex >= 0
                     }
                     onClicked: {
-                        loginUserConfirmed(userListView.model[userListView.currentIndex], wechatSecretKey.text)
+                        var secretKey = wechatSecretKey.text
+                        if (automateDetected.checkState == Qt.Checked)
+                        {
+                            secretKey = ""
+                        }
+                        loginUserConfirmed(userListView.model[userListView.currentIndex], secretKey)
                     }
                 }
 

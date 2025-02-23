@@ -9,6 +9,8 @@ Item {
         BackupType_UNKNOWN
     }
 
+    property string defaultHeadImg: "qrc:/assets/images/DefaultProfileHead@2x.png"
+
     property int openFolderBackupType: -1
     property int currentFolderBackupType: -1
     property var currentLoginUser
@@ -35,12 +37,17 @@ Item {
         currentLoginUser = pWeChat.loadLoginUser(userName, secretKey)
     }
 
-    function loadFriends() {
-        return pWeChat.listFriends()
+    function listFriends(start, count) {
+        return pWeChat.listFriends(start, count, false)
     }
 
     function loadMessages() {
 
+    }
+
+    function detectSecretKey() {
+        // only for windows
+        return pWeChat.detectLoginUserSecretKey()
     }
 
     function performAsyncOperation(operation, done) {

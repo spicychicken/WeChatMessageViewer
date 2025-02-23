@@ -8,6 +8,7 @@ using wechat::WeChatContext;
 using std::string;
 using std::vector;
 using wechat::model::WeChatLoginUser;
+using wechat::model::WeChatFriend;
 using wechat::model::BackupType;
 
 WeChatContext& WeChatContext::get()
@@ -42,19 +43,14 @@ WeChatLoginUser* WeChatContext::loadLoginUser(const std::string& loginUserName, 
     return currentLoginUser;
 }
 
-vector<string> WeChatContext::listFriends()
+const vector<WeChatFriend>& WeChatContext::listFriends()
 {
     if (currentUser && !currentUser->hasFriendData())
     {
         backupParser->loadUserFriends(*currentUser);
     }
 
-    vector<string>    friends;
-    for (const auto& iter : currentUser->getFriends())
-    {
-        friends.push_back(iter.UserName());
-    }
-    return friends;
+    return currentUser->getFriends();
 }
 
 void WeChatContext::createParserFromPath(const string& path)

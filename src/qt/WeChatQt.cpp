@@ -1,5 +1,7 @@
 #include "WeChatQt.h"
 
+#include <QDateTime>
+
 #include "wechat/WeChatContext.h"
 
 WeChatQt::WeChatQt()
@@ -31,24 +33,65 @@ QStringList WeChatQt::listLoginUsers()
     return stringList;
 }
 
+QString WeChatQt::detectLoginUserSecretKey()
+{
+    // only for windows
+    return QString::fromStdString(sBackup->getMetadata("rawKey"));
+}
+
+void weChatUserToQVariantMap(const wechat::model::WeChatUser* user, QVariantMap& variantMap)
+{
+    variantMap["userID"] = QString::fromStdString(user->UserID());
+    variantMap["userName"] = QString::fromStdString(user->UserName());
+    variantMap["displayName"] = QString::fromStdString(user->DisplayName());
+    variantMap["headImg"] = QString::fromStdString(user->HeadImgUrl());
+    variantMap["headImgHD"] = QString::fromStdString(user->HeadImgUrlHD());
+}
+
 QVariantMap WeChatQt::loadLoginUser(const QString& loginUserName, const QString& secretKey)
 {
     wechat::model::WeChatLoginUser* loginUser = sWECHAT.loadLoginUser(loginUserName.toStdString(), secretKey.toStdString());
     
     // convert WeChatLoginUser to QVariantMap
     QVariantMap  loginUserMap;
+    weChatUserToQVariantMap(loginUser, loginUserMap);
     return loginUserMap;
 }
 
-QStringList WeChatQt::listFriends()
+QVariantMap WeChatQt::listFriends(int start, int count, bool filterZero)
 {
-    std::vector<std::string> friends = sWECHAT.listFriends();
-    QStringList     stringList;
-    for (const auto& user : friends)
+    const std::vector<wechat::model::WeChatFriend>& friends = sWECHAT.listFriends();
+
+    QVariantMap  results;
+
+    results["total"] = friends.size();
+
+    QVariantList    friendsList;
+    for (int i = 0; i < count; i++)
     {
-        stringList.append(QString::fromStdString(user));
+        const auto& f = friends[start + i];
+
+        QVariantMap     friendMap;
+
+        weChatUserToQVariantMap(&f, friendMap);
+        friendMap["msgCount"] = f.RecordCount();
+
+        if (f.RecordCount() != 0)
+        {
+            friendMap["beginTime"] = QDateTime::fromSecsSinceEpoch(f.BeginTime()).toString("yyyy-MM-dd hh:mm:ss");
+            friendMap["lastTime"] = QDateTime::fromSecsSinceEpoch(f.LastTime()).toString("yyyy-MM-dd hh:mm:ss");
+        }
+        else
+        {
+            friendMap["beginTime"] = "";
+            friendMap["lastTime"] = "";
+        }
+
+        friendsList.append(friendMap);
     }
-    return stringList;
+    results["msg"] = friendsList;
+
+    return results;
 }
 
 WeChatQt* WeChatQt::instance() {

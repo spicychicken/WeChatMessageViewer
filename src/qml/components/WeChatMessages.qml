@@ -46,6 +46,8 @@ Loader {
             }
 
             ListView {
+                id: userFriendList
+                currentIndex: -1
                 Layout.preferredWidth: parent.width - Theme.componentMargin*0.5
                 Layout.fillHeight: true
                 Layout.alignment: Qt.AlignLeft
@@ -53,24 +55,52 @@ Loader {
                 clip: false
                 interactive: false
 
+                ScrollBar.vertical: ScrollBar {
+                    visible: true
+                    policy: ScrollBar.AsNeeded
+                }
+
                 model: WeChat.loadFriends()
 
-                delegate: RowLayout {
+                delegate:  Rectangle {
+                    property bool hovered: false
+                    height: 28
                     width: ListView.view.width
-                    height: Math.max(fontsize.contentHeight, 20)
-                    spacing: Theme.componentMargin
+
+                    color: {
+                        if (userFriendList.currentIndex === index || hovered) {
+                            return "lightblue"
+                        }
+                        else {
+                            return (index % 2) ? Theme.colorForeground :Theme.colorBackground
+                        }
+                    }
 
                     Text {
-                        id: legend
-                        Layout.preferredWidth: 192
-                        Layout.alignment: Qt.AlignBaseline
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.componentMargin
+                        anchors.verticalCenter: parent.verticalCenter
 
-                        text: modelData
-                        textFormat: Text.PlainText
-                        horizontalAlignment: Text.AlignRight
-                        verticalAlignment: Text.AlignBottom
+                        text: modelData["displayName"]
                         font.pixelSize: Theme.componentFontSize
-                        color: Theme.colorSubText
+                        color: Theme.colorText
+                    }
+
+                    MouseArea {
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
+                        anchors.fill: parent
+                        onClicked: {
+                            userFriendList.currentIndex = index;
+                        }
+
+                        onEntered: {
+                            hovered = true // 更新 hovered 属性来跟踪鼠标的进入和退出状态。
+                        }
+                        
+                        onExited: {
+                            hovered = false // 更新 hovered 属性来跟踪鼠标的进入和退出状态。
+                        }
                     }
                 }
             }
@@ -95,7 +125,10 @@ Loader {
                 clip: false
                 interactive: true
 
-                ScrollBar.vertical: ScrollBar { visible: true }
+                ScrollBar.vertical: ScrollBar {
+                    visible: true
+                    policy: ScrollBar.AsNeeded
+                }
 
                 model: Qt.fontFamilies()
                 delegate: Rectangle {

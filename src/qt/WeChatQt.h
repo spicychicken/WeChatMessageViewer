@@ -17,8 +17,9 @@ public:
     Q_INVOKABLE bool initContextFromPath(const QUrl& url);
     Q_INVOKABLE QStringList listLoginUsers();
 
+    Q_INVOKABLE QString detectLoginUserSecretKey();
     Q_INVOKABLE QVariantMap loadLoginUser(const QString& loginUserName, const QString& secretKey);
-    Q_INVOKABLE QStringList listFriends();
+    Q_INVOKABLE QVariantMap listFriends(int start, int count, bool filterZero);
 
     static WeChatQt* instance();
 };

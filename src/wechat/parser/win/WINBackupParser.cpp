@@ -67,6 +67,8 @@ bool WINBackupParser::loadBackup(model::WeChatBackup& backup)
 {
     backup.setBackupType(wechat::model::BackupType::BackupType_WIN);
 
+    backup.setMetadata("rawKey", details::detectSqliteRawKey());
+
     // load dbpass from local json
     // loadDBPassFromLocalToMap(rawKeys);
 
@@ -83,7 +85,15 @@ WeChatLoginUser& WINBackupParser::loadLoginUser(model::WeChatBackup& backup, con
     string userID = md5(loginUserName);
     WeChatLoginUser& loginUser = backup.getLoginUserByID(userID);
     loginUser.setUserName(loginUserName);
-    loginUser.setSecretKey(secretKey);
+
+    if (secretKey.empty())
+    {
+        loginUser.setSecretKey(backup.getMetadata("rawKey"));
+    }
+    else
+    {
+        loginUser.setSecretKey(secretKey);
+    }
 
     loadUserFriendFromContact(loginUser, loginUser);
 

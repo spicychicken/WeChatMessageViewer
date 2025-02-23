@@ -27,7 +27,7 @@ Item {
         id: overlayImg
         source: sourceImg
         anchors.fill: sourceImg
-        brightness: 1.0
-        colorization: 1.0
+        // brightness: 1.0
+        // colorization: 1.0
     }
 }

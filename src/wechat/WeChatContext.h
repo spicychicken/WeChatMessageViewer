@@ -22,7 +22,7 @@ public:
     bool initContextFromPath(const std::string& path);
     std::vector<std::string> listLoginUsers();
     model::WeChatLoginUser* loadLoginUser(const std::string& loginUserName, const std::string& secretKey);
-    std::vector<std::string> listFriends();
+    const std::vector<model::WeChatFriend>& listFriends();
 
     ////////////////////////////////////////////
     void createParserFromPath(const std::string& path);

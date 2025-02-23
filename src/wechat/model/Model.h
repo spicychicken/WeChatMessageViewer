@@ -203,11 +203,14 @@ public:
 
     BackupType getBackupType() const                    { return backupType; }
 
+    void setMetadata(const std::string& tag, const std::string& data)   { metadatas[tag] = data; }
+    std::string getMetadata(const std::string& tag)                     { return metadatas[tag]; }
+
 private:
     std::unordered_map<std::string, model::WeChatLoginUser>     loginUsers;
 
     // iOS: iTuneVersion, productVersion, lastBackupDate
-    std::unordered_map<std::string, std::string>        metedatas;
+    std::unordered_map<std::string, std::string>        metadatas;
 
     std::string                     backupPath;
     BackupType                      backupType;
