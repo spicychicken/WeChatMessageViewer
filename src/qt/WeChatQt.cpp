@@ -44,8 +44,13 @@ void weChatUserToQVariantMap(const wechat::model::WeChatUser* user, QVariantMap&
     variantMap["userID"] = QString::fromStdString(user->UserID());
     variantMap["userName"] = QString::fromStdString(user->UserName());
     variantMap["displayName"] = QString::fromStdString(user->DisplayName());
-    variantMap["headImg"] = QString::fromStdString(user->HeadImgUrl());
-    variantMap["headImgHD"] = QString::fromStdString(user->HeadImgUrlHD());
+
+    if (!user->HeadImgUrlHD().empty()) {
+        variantMap["headImg"] = QString::fromStdString(user->HeadImgUrlHD());
+    }
+    else {
+        variantMap["headImg"] = QString::fromStdString(user->HeadImgUrl());
+    }
 }
 
 QVariantMap WeChatQt::loadLoginUser(const QString& loginUserName, const QString& secretKey)

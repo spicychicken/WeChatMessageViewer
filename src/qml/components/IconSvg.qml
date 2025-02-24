@@ -21,6 +21,7 @@ Item {
         fillMode: Image.PreserveAspectFit
         smooth: control.smooth
         asynchronous: false
+        cache: false
     }
 
     MultiEffect {

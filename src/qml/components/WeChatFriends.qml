@@ -22,12 +22,10 @@ Loader {
     Component {
         id: headImage
         IconSvg {
+            asynchronous: true
             anchors.fill: parent
             source: {
-                if (rowData["headImgHD"] != "") {
-                    return rowData["headImgHD"]
-                }
-                else if (rowData["headImg"] != "") {
+                if (rowData["headImg"] != "") {
                     return rowData["headImg"]
                 }
                 else {

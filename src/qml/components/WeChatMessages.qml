@@ -117,36 +117,86 @@ Loader {
                 text: "Message"
             }
 
-            ListView {
-                Layout.preferredWidth: parent.width - Theme.componentMargin*0.5
+            WeChatTableView {
+                id: messagesTableView
+
+                Layout.preferredWidth: parent.width
+                Layout.alignment: Qt.AlignLeft
                 Layout.fillHeight: true
-                Layout.alignment: Qt.AlignRight
 
-                clip: false
-                interactive: true
+                property int wwww: (parent.width - 64)/5
 
-                ScrollBar.vertical: ScrollBar {
-                    visible: true
-                    policy: ScrollBar.AsNeeded
+                anchors.leftMargin: 5
+                anchors.rightMargin: 5
+                anchors.topMargin: 5
+                anchors.bottomMargin: 5
+
+                headerSource:[
+                    {
+                        title: qsTr("Head"),
+                        component: headImage,
+                        dataIndex: 'headImg',
+                        width: 64,
+                    },
+                    {
+                        title: qsTr("UserName"),
+                        dataIndex: 'userName',
+                        width: wwww,
+                    },
+                    {
+                        title: qsTr("NickName"),
+                        dataIndex: 'displayName',
+                        width: wwww,
+                    },
+                    {
+                        title: qsTr("Count"),
+                        dataIndex: 'msgCount',
+                        width: wwww,
+                    },
+                    {
+                        title: qsTr("From"),
+                        dataIndex: 'beginTime',
+                        width: wwww,
+                    },
+                    {
+                        title: qsTr("To"),
+                        dataIndex: 'lastTime',
+                        width: wwww,
+                    }
+                ]
+
+                dataSource: []
+            }
+
+            RowLayout {
+                implicitHeight: 36
+                Layout.preferredWidth: parent.width
+
+                CheckBox {
+                    visible: false
+                    Layout.alignment: Qt.AlignLeft
+                    onClicked: {
+                    }
+                    text: qsTr("Filter friend with 0 message record")
                 }
 
-                model: Qt.fontFamilies()
-                delegate: Rectangle {
-                    height: 28
-                    width: ListView.view.width
-
-                    color: (index % 2) ? Theme.colorForeground :Theme.colorBackground
-
-                    Text {
-                        anchors.left: parent.left
-                        anchors.leftMargin: Theme.componentMargin
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        text: modelData
-                        font.pixelSize: Theme.componentFontSize
-                        color: Theme.colorText
+                Pagination {
+                    id: gagination
+                    Layout.alignment: Qt.AlignRight | Qt.ALighVCenter
+                    implicitHeight: parent.implicitHeight
+                    pageCurrent: 1
+                    itemCount: 0
+                    onRequestPage: (page, count) => {
+                        var results = WeChat.listFriends((page - 1) * count, count)
+                        friendsTableView.dataSource = Array.from(results["msg"])
                     }
                 }
+            }
+
+            Component.onCompleted: {
+                var results = WeChat.listFriends((gagination.pageCurrent - 1) * gagination.__itemPerPage, gagination.__itemPerPage)
+                gagination.itemCount = results["total"]
+                friendsTableView.dataSource = Array.from(results["msg"])
             }
         }
     }

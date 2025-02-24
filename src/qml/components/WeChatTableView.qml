@@ -192,12 +192,4 @@ Rectangle {
             }
         }
     }
-
-    /////////////////////////////////////////////////
-    function customItem(componentID, options = {}) {
-        var item = {}
-        item.componentID = componentID
-        item.options = options
-        return item
-    }
 }

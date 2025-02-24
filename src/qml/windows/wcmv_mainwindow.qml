@@ -92,10 +92,7 @@ ApplicationWindow {
                                     appContent.visible = true
 
                                     // change head
-                                    if (WeChat.currentLoginUser["headImgHD"] != "") {
-                                        userHeadImg.source = WeChat.currentLoginUser["headImgHD"]
-                                    }
-                                    else if (WeChat.currentLoginUser["headImg"] != "") {
+                                    if (WeChat.currentLoginUser["headImg"] != "") {
                                         userHeadImg.source = WeChat.currentLoginUser["headImg"]
                                     }
                                     else {
