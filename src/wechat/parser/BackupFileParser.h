@@ -19,7 +19,7 @@ class BackupFileParser
 {
 public:
     virtual bool loadBackup(model::WeChatBackup& backup) = 0;
-    virtual std::vector<std::string> listLoginUsers(model::WeChatBackup& backup) = 0;
+    virtual std::vector<std::string> listLoginUserNames(model::WeChatBackup& backup) = 0;
     virtual model::WeChatLoginUser& loadLoginUser(model::WeChatBackup& backup, const std::string& loginUserName, const std::string& secretKey = "") = 0;
 
     virtual void loadLoginUsers(model::WeChatBackup& backup) = 0;
@@ -31,6 +31,8 @@ public:
 
     virtual std::string loadUserHeadImgData(const model::WeChatLoginUser& user, const model::WeChatUser& userOrFriend) = 0;
     virtual std::string loadUserAudioData(const model::WeChatLoginUser& user, const model::WeChatFriend& afriend, const model::WeChatMessage& message) = 0;
+
+    virtual std::string loadMsgImgData(const std::string& fileName) = 0;
 
     void setNotifer(ParserStateNotifer n) {
         notifer = n;

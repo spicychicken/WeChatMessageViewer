@@ -17,7 +17,7 @@ Loader {
 
 
     active: false
-    asynchronous: false
+    asynchronous: true
 
     sourceComponent: Grid {
         id: grid
@@ -52,20 +52,26 @@ Loader {
                 Layout.fillHeight: true
                 Layout.alignment: Qt.AlignLeft
 
-                clip: false
-                interactive: false
+                clip: true
+                interactive: true
 
                 ScrollBar.vertical: ScrollBar {
-                    visible: true
                     policy: ScrollBar.AsNeeded
                 }
 
-                model: WeChat.loadFriends()
+                model: []
 
                 delegate:  Rectangle {
                     property bool hovered: false
                     height: 28
                     width: ListView.view.width
+
+                    radius: {
+                        if (hovered) {
+                            return 5;
+                        }
+                        return 0;
+                    }
 
                     color: {
                         if (userFriendList.currentIndex === index || hovered) {
@@ -91,7 +97,13 @@ Loader {
                         hoverEnabled: true
                         anchors.fill: parent
                         onClicked: {
-                            userFriendList.currentIndex = index;
+                            messageTitle.text =  userFriendList.model[index]["displayName"]
+                            var results = WeChat.listMessages(userFriendList.model[index]["userID"],
+                                gagination.pageCurrent, gagination.__itemPerPage)
+                            gagination.itemCount = results["total"]
+
+                            messagesTableView.model = results["msg"]
+                            messagesTableView.currentFriendID = userFriendList.model[index]["userID"]
                         }
 
                         onEntered: {
@@ -112,60 +124,17 @@ Loader {
             height: grid.hhhh
 
             SectionTitle {
+                id: messageTitle
                 Layout.preferredWidth: parent.width - Theme.componentMargin*0.5
                 Layout.alignment: Qt.AlignRight
                 text: "Message"
             }
 
-            WeChatTableView {
+            WeChatMsgListView {
                 id: messagesTableView
 
-                Layout.preferredWidth: parent.width
-                Layout.alignment: Qt.AlignLeft
-                Layout.fillHeight: true
-
-                property int wwww: (parent.width - 64)/5
-
-                anchors.leftMargin: 5
-                anchors.rightMargin: 5
-                anchors.topMargin: 5
-                anchors.bottomMargin: 5
-
-                headerSource:[
-                    {
-                        title: qsTr("Head"),
-                        component: headImage,
-                        dataIndex: 'headImg',
-                        width: 64,
-                    },
-                    {
-                        title: qsTr("UserName"),
-                        dataIndex: 'userName',
-                        width: wwww,
-                    },
-                    {
-                        title: qsTr("NickName"),
-                        dataIndex: 'displayName',
-                        width: wwww,
-                    },
-                    {
-                        title: qsTr("Count"),
-                        dataIndex: 'msgCount',
-                        width: wwww,
-                    },
-                    {
-                        title: qsTr("From"),
-                        dataIndex: 'beginTime',
-                        width: wwww,
-                    },
-                    {
-                        title: qsTr("To"),
-                        dataIndex: 'lastTime',
-                        width: wwww,
-                    }
-                ]
-
-                dataSource: []
+                Layout.preferredWidth: parent.width - Theme.componentMargin*0.5
+                Layout.alignment: Qt.AlignRight
             }
 
             RowLayout {
@@ -187,17 +156,18 @@ Loader {
                     pageCurrent: 1
                     itemCount: 0
                     onRequestPage: (page, count) => {
-                        var results = WeChat.listFriends((page - 1) * count, count)
-                        friendsTableView.dataSource = Array.from(results["msg"])
+                        var results = WeChat.listMessages(messagesTableView.currentFriendID,
+                                gagination.pageCurrent, gagination.__itemPerPage)
+                        messagesTableView.model = results["msg"]
                     }
                 }
             }
+        }
 
-            Component.onCompleted: {
-                var results = WeChat.listFriends((gagination.pageCurrent - 1) * gagination.__itemPerPage, gagination.__itemPerPage)
-                gagination.itemCount = results["total"]
-                friendsTableView.dataSource = Array.from(results["msg"])
-            }
+        Component.onCompleted: {
+            var friends = WeChat.listFriends(0, 10000)
+            userFriendList.model = friends["msg"].filter(f => f["msgCount"] > 0).sort((a,b) => b["lastTime"].localeCompare(a["lastTime"]))
+            userFriendList.currentIndex = -1
         }
     }
 }

@@ -50,19 +50,19 @@ Window {
 
             ListView {
                 id: userListView
-                currentIndex: -1
+                // currentIndex: -1
                 Layout.preferredWidth: parent.width
                 Layout.fillHeight: true
                 Layout.alignment: Qt.AlignRight
 
-                clip: false
+                clip: true
                 interactive: true
 
                 ScrollBar.vertical: ScrollBar {
                     policy: ScrollBar.AsNeeded
                 }
 
-                model: WeChat.listLoginUsers()
+                model: WeChat.listLoginUserNames()
                 delegate: Rectangle {
                     property bool hovered: false
                     height: 28

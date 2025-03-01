@@ -59,7 +59,7 @@ bool IOSBackupParser::loadBackup(model::WeChatBackup& backup)
     return false;
 }
 
-vector<string> IOSBackupParser::listLoginUsers(WeChatBackup& backup)
+vector<string> IOSBackupParser::listLoginUserNames(WeChatBackup& backup)
 {
     unordered_map<string, WeChatLoginUser> users;
     loadLoginUsersFromMMDB(users);
@@ -477,6 +477,12 @@ string IOSBackupParser::loadUserHeadImgData(const model::WeChatLoginUser& user, 
 }
 
 string IOSBackupParser::loadUserAudioData(const model::WeChatLoginUser& user, const model::WeChatFriend& afriend, const model::WeChatMessage& message)
+{
+    // do nothing, can't go here
+    return "";
+}
+
+std::string IOSBackupParser::loadMsgImgData(const std::string& fileName)
 {
     // do nothing, can't go here
     return "";

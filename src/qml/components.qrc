@@ -10,6 +10,7 @@
         <file alias="WeChatMessages.qml">components/WeChatMessages.qml</file>
         <file alias="WeChatFriends.qml">components/WeChatFriends.qml</file>
         <file alias="WeChatTableView.qml">components/WeChatTableView.qml</file>
+        <file alias="WeChatMsgListView.qml">components/WeChatMsgListView.qml</file>
         <file alias="Pagination.qml">components/Pagination.qml</file>
     </qresource>
 </RCC>

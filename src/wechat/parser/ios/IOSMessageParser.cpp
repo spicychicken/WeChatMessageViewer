@@ -43,11 +43,11 @@ void IOSMessageParser::parseByImage(model::WeChatMessage& msg) const
     string path;
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".pic", path))
     {
-        msg.setSrc(path);
+        msg.setMetadata("src", path);
     }
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".pic_thum", path))
     {
-        msg.setThumb(path);
+        msg.setMetadata("thumb", path);
     }
 }
 
@@ -57,7 +57,7 @@ void IOSMessageParser::parseByAudio(model::WeChatMessage& msg) const
     string path;
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".aud", path))
     {
-        msg.setSrc(path);
+        msg.setMetadata("src", path);
     }
 }
 
@@ -73,11 +73,11 @@ void IOSMessageParser::parseByVideo(model::WeChatMessage& msg) const
     string path;
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".mp4", path))
     {
-        msg.setSrc(path);
+        msg.setMetadata("src", path);
     }
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".video_thum", path))
     {
-        msg.setThumb(path);
+        msg.setMetadata("thumb", path);
     }
 }
 
@@ -99,8 +99,8 @@ void IOSMessageParser::parseByAppMsg(model::WeChatMessage& msg) const
     string thumburl = Utils::getXmlNodeByPath(msg.getContent(), "/msg/appmsg/thumburl");
     
     msg.setContent(title);
-    msg.setSrc(url);
-    msg.setThumb(thumburl);
+    msg.setMetadata("src", url);
+    msg.setMetadata("thumb", thumburl);
 }
 
 void IOSMessageParser::parseBySystem(model::WeChatMessage& msg) const

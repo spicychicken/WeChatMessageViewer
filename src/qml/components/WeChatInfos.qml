@@ -16,7 +16,7 @@ Loader {
 
 
     active: false
-    asynchronous: false
+    asynchronous: true
 
     sourceComponent: GridLayout {
         id: grid

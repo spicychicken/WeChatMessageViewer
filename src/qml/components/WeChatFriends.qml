@@ -17,21 +17,20 @@ Loader {
 
 
     active: false
-    asynchronous: false
+    asynchronous: true
 
     Component {
         id: headImage
         IconSvg {
             asynchronous: true
+
+            anchors.topMargin: 2
+            anchors.bottomMargin: 2
+            anchors.leftMargin: 2
+            anchors.rightMargin: 2
+
             anchors.fill: parent
-            source: {
-                if (rowData["headImg"] != "") {
-                    return rowData["headImg"]
-                }
-                else {
-                    return WeChat.defaultHeadImg
-                }
-            }
+            source: WeChat.getUserHeadImgUrl(rowData)
         }
     }
 

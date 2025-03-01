@@ -20,9 +20,14 @@ public:
 
     model::BackupType detectBackupType(const std::string& path);
     bool initContextFromPath(const std::string& path);
-    std::vector<std::string> listLoginUsers();
+    std::vector<std::string> listLoginUserNames();
     model::WeChatLoginUser* loadLoginUser(const std::string& loginUserName, const std::string& secretKey);
+    const model::WeChatFriend& getFriendByID(const std::string& friendID);
     const std::vector<model::WeChatFriend>& listFriends();
+    std::vector<model::WeChatMessage> listMessages(const std::string& friendID, int start, int count);
+
+    void playAudio(const std::string& friendID, const model::WeChatMessage& message);
+    std::string loadMsgImgData(const std::string& fileName);
 
     ////////////////////////////////////////////
     void createParserFromPath(const std::string& path);

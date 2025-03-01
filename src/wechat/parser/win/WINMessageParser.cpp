@@ -29,11 +29,17 @@ void WINMessageParser::parseSender(model::WeChatMessage& msg, bool isSender) con
 {
     if (afriend.Type() == wechat::model::UserType::UserType_Group && !isSender)
     {
-        string senderName;
+        string senderName, senderID;
         if (msg.getType() == ChatMessageType::Text)
         {
             auto results = Protobuf::toMap(msg.getExtra());
+
+            // [To-Do] workaround
             senderName = results["3.2.0"];
+            if (senderName.substr(0, 11) == "<msgsource>")
+            {
+                senderName = Utils::getXmlNodeByPath(senderName, "/msgsource/atuserlist");
+            }
         }
         else if (msg.getType() == ChatMessageType::Audio)
         {
@@ -53,11 +59,13 @@ void WINMessageParser::parseSender(model::WeChatMessage& msg, bool isSender) con
         {
             msg.setSender(getSenderByName(senderName));
         }
+
     }
 }
 
 void WINMessageParser::parseByText(model::WeChatMessage& msg) const
 {
+    // do nothing
 }
 
 void WINMessageParser::parseByImage(model::WeChatMessage& msg) const
@@ -65,13 +73,27 @@ void WINMessageParser::parseByImage(model::WeChatMessage& msg) const
     auto results = Protobuf::toMap(msg.getExtra());
     if (afriend.Type() == wechat::model::UserType::UserType_Group)
     {
-        msg.setThumb(winArchives.correctPath(user.UserName(), results["3.2.4"]));
-        msg.setSrc(winArchives.correctPath(user.UserName(), results["3.2.3"]));
+        if (results["3.1.2"] == "4")
+        {
+            msg.setMetadata("thumb", winArchives.correctPath(user.UserName(), results["3.2.3"]));
+            msg.setMetadata("src", winArchives.correctPath(user.UserName(), results["3.2.2"]));
+        }
+        else if (results["3.1.3"] == "4")
+        {
+            msg.setMetadata("thumb", winArchives.correctPath(user.UserName(), results["3.2.4"]));
+            msg.setMetadata("src", winArchives.correctPath(user.UserName(), results["3.2.3"]));
+        }
     }
     else
     {
-        msg.setThumb(winArchives.correctPath(user.UserName(), results["3.2.3"]));
-        msg.setSrc(winArchives.correctPath(user.UserName(), results["3.2.2"]));
+        if (results["3.1.1"] == "3") {
+            msg.setMetadata("thumb", winArchives.correctPath(user.UserName(), results["3.2.1"]));
+        }
+        else if (results["3.1.3"] == "3")
+        {
+            msg.setMetadata("thumb", winArchives.correctPath(user.UserName(), results["3.2.3"]));
+        }
+        msg.setMetadata("src", winArchives.correctPath(user.UserName(), results["3.2.2"]));
     }
 }
 
@@ -79,6 +101,9 @@ void WINMessageParser::parseByAudio(model::WeChatMessage& msg) const
 {
     auto results = Protobuf::toMap(msg.getExtra());
     string senderName = results["3.2.0"];
+
+    int seconds = std::stoi(Utils::getXmlAttributeByPath(msg.getContent(), "/msg/voicemsg", "voicelength")) / 1000 + 0.5;
+    msg.setMetadata("seconds", std::to_string(seconds));
 }
 
 void WINMessageParser::parseByVideo(model::WeChatMessage& msg) const
@@ -86,20 +111,24 @@ void WINMessageParser::parseByVideo(model::WeChatMessage& msg) const
     auto results = Protobuf::toMap(msg.getExtra());
     if (afriend.Type() == wechat::model::UserType::UserType_Group)
     {
-        msg.setThumb(winArchives.correctPath(user.UserName(), results["3.2.3"]));
-        if (results.count("3.2.5") && !results["3.2.5"].empty())
+        // [To-Do] workaround
+        if (results["3.2.1"].substr(0, 11) == "<msgsource>")
         {
-            msg.setSrc(winArchives.correctPath(user.UserName(), results["3.2.5"]));
+            msg.setMetadata("thumb", winArchives.correctPath(user.UserName(), results["3.2.3"]));
+            msg.setMetadata("src", winArchives.correctPath(user.UserName(), results["3.2.4"]));
+            msg.setMetadata("raw", winArchives.correctPath(user.UserName(), results["3.2.5"]));
         }
         else
         {
-            msg.setSrc(winArchives.correctPath(user.UserName(), results["3.2.4"]));
+            msg.setMetadata("thumb", winArchives.correctPath(user.UserName(), results["3.2.2"]));
+            msg.setMetadata("src", winArchives.correctPath(user.UserName(), results["3.2.3"]));
+            msg.setMetadata("raw", winArchives.correctPath(user.UserName(), results["3.2.4"]));
         }
     }
     else
     {
-        msg.setThumb(winArchives.correctPath(user.UserName(), results["3.2.2"]));
-        msg.setSrc(winArchives.correctPath(user.UserName(), results["3.2.3"]));
+        msg.setMetadata("thumb", winArchives.correctPath(user.UserName(), results["3.2.2"]));
+        msg.setMetadata("src", winArchives.correctPath(user.UserName(), results["3.2.3"]));
     }
 }
 
@@ -121,13 +150,17 @@ void WINMessageParser::parseByAppMsg(model::WeChatMessage& msg) const
     string thumburl = Utils::getXmlNodeByPath(msg.getContent(), "/msg/appmsg/thumburl");
     
     msg.setContent(title);
-    msg.setSrc(url);
-    msg.setThumb(thumburl);
+
+    msg.setMetadata("thumb", thumburl);
+    msg.setMetadata("src", url);
+
+    // [To-Do]
+    msg.setContent("[App Message]");
 }
 
 void WINMessageParser::parseBySystem(model::WeChatMessage& msg) const
 {
-    string oldC = msg.getContent(), newC = "";
+    string oldC = msg.getContent();
     if (Utils::startsWith(oldC, "<sysmsg"))
     {
         auto sysMsgType = Utils::getXmlAttributeByPath(oldC, "/sysmsg", "type");
@@ -139,11 +172,16 @@ void WINMessageParser::parseBySystem(model::WeChatMessage& msg) const
     }
     else
     {
-        newC = Utils::removeHtmlTags(oldC);
+        string newC = Utils::removeHtmlTags(oldC);
+        msg.setContent(newC);
     }
-    msg.setContent(newC);
+
+    // [To-Do]
+    msg.setContent("[System Message]");
 }
 
 void WINMessageParser::parseByOther(model::WeChatMessage& msg) const
 {
+    // [To-Do]
+    msg.setContent("[Other]");
 }

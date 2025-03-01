@@ -33,6 +33,7 @@ protected:
     virtual void parseByOther(model::WeChatMessage& msg) const = 0;
 
 protected:
+    const model::WeChatUser* getSenderByID(const std::string& senderID) const;
     const model::WeChatUser* getSenderByName(const std::string& senderName) const;
 
 protected:

@@ -60,7 +60,7 @@ Rectangle {
         return 36;
     }
     property var dataHeightProvider: function(row) {
-        return table_view_data.height/20;
+        return table_view_data.height / 20;
     }
 
     ///////////////////////// UI //////////////////////////////////////////////////////////

@@ -36,9 +36,23 @@ public:
     std::string UserName() const        { return userName; }
     std::string NickName() const        { return nickName; }
     std::string AliasName() const       { return aliasName; }
+
     std::string LocalHeadImg() const    { return localHeadImg; }
     std::string HeadImgUrl() const      { return headImgUrl; }
     std::string HeadImgUrlHD() const    { return headImgUrlHD; }
+
+    std::string HeadImg() const
+    {
+        if (localHeadImg != "")
+        {
+            return localHeadImg;
+        }
+        if (headImgUrlHD != "")
+        {
+            return headImgUrlHD;
+        }
+        return headImgUrl;
+    }
 
     std::string DisplayName() const
     {
@@ -203,6 +217,7 @@ public:
 
     BackupType getBackupType() const                    { return backupType; }
 
+    bool metadataExist(const std::string& tag)                          { return metadatas.count(tag) != 0; }
     void setMetadata(const std::string& tag, const std::string& data)   { metadatas[tag] = data; }
     std::string getMetadata(const std::string& tag)                     { return metadatas[tag]; }
 
@@ -233,16 +248,15 @@ enum class ChatMessageType
 class WeChatMessage
 {
 public:
-    const WeChatUser* getSender() const               { return sender; }
-    std::string getContent() const                    { return content; }
-    std::string getMsgSvrID() const                   { return msgSvrID; }
-    int getTime() const                               { return msgTime; }
-    ChatMessageType getType() const                   { return type; }
-    std::string getExtra() const                      { return extra; }
-    std::string getDbPath() const                     { return dbPath; }
+    const WeChatUser* getSender() const                             { return sender; }
+    std::string getContent() const                                  { return content; }
+    std::string getMsgSvrID() const                                 { return msgSvrID; }
+    int getTime() const                                             { return msgTime; }
+    ChatMessageType getType() const                                 { return type; }
+    std::string getExtra() const                                    { return extra; }
+    std::string getMetadata(const std::string& tag) const           { return metadatas.at(tag); }
 
-    std::string getSrc() const                        { return src; }
-    std::string getThumb() const                      { return thumb; }
+    const std::unordered_map<std::string, std::string>& getMetadatas() const   { return metadatas; }
 
 public:
     void setTime(int t)                               { this->msgTime = t; }
@@ -251,10 +265,8 @@ public:
     void setMsgSvrID(const std::string& id)           { this->msgSvrID = id; }
     void setType(int type);
     void setExtra(const std::string& extra)           { this->extra = extra; }
-    void setDbPath(const std::string& dbPath)         { this->dbPath = dbPath; }
 
-    void setSrc(const std::string& src)               { this->src = src; }
-    void setThumb(const std::string& thumb)           { this->thumb = thumb; }
+    void setMetadata(const std::string& tag, const std::string& data)   { metadatas[tag] = data; }
 
 private:
     ChatMessageType                 type;
@@ -264,11 +276,8 @@ private:
     int                             msgTime;
     std::string                     extra;
 
-    std::string                     dbPath;
-
-    // 
-    std::string                     src;
-    std::string                     thumb;
+    // dbPath, src, thumb
+    std::unordered_map<std::string, std::string>        metadatas;
 };
 
 }   // wechat::model

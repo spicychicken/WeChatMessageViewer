@@ -17,6 +17,7 @@ namespace Utils
     std::vector<std::string> split(const std::string& value, const std::string& delimiters);
     std::string readFile(const std::string& fileName);
     std::string readBinaryFile(const std::string& fileName);
+    void writeBinaryFile(const std::string& fileName, const std::string& fileContent);
     std::string timestampToString(int timestamp);
     std::string currentTime();
     void outputLog(const std::string& log);

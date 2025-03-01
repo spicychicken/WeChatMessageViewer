@@ -75,7 +75,7 @@ bool WINBackupParser::loadBackup(model::WeChatBackup& backup)
     return true;
 }
 
-vector<string> WINBackupParser::listLoginUsers(WeChatBackup& backup)
+vector<string> WINBackupParser::listLoginUserNames(WeChatBackup& backup)
 {
     return winArchives.listLoginUserNames();
 }
@@ -262,7 +262,7 @@ vector<WeChatMessage> WINBackupParser::loadFriendMessages(const WeChatLoginUser&
                     messages.push_back(messageParser.parse(
                         reader.readString(5), reader.readInt(3), reader.readString(2), 
                         reader.readInt(1) == 1, reader.readInt(0), reader.readBlob(4)));
-                    messages.back().setDbPath(dbPaths[p]);
+                    messages.back().setMetadata("dbPath", dbPaths[p]);
                 }
             }
 
@@ -317,7 +317,7 @@ string WINBackupParser::loadUserHeadImgData(const model::WeChatLoginUser& user, 
 string WINBackupParser::loadUserAudioData(const model::WeChatLoginUser& user, const model::WeChatFriend& afriend, const model::WeChatMessage& message)
 {
     string querySql = "select Buf from Media where Reserved0 = '" + message.getMsgSvrID() + "'";
-    string msgDBPath = backupPath + "/" + user.UserName() + "/Msg/Multi/MediaMsg" + message.getDbPath().substr(3);
+    string msgDBPath = backupPath + "/" + user.UserName() + "/Msg/Multi/MediaMsg" + message.getMetadata("dbPath").substr(3);
 
     sqlitedb::StmtReader reader;
     if (sqlitedb::queryData(msgDBPath, getDBPassword(user), querySql, reader))
@@ -328,5 +328,38 @@ string WINBackupParser::loadUserAudioData(const model::WeChatLoginUser& user, co
         }
     }
     std::cout << "cannot find audio in wrong dbpath" << std::endl;
+    return "";
+}
+
+bool getWeChatImageMask(const string& prefixContent, short& mask)
+{
+    for (auto key : {0xFFD8, 0x8950, 0x424D})
+    {
+        if (((unsigned char)(prefixContent[0]) ^ (key >> 8)) == ((unsigned char)(prefixContent[1]) ^ (key & 0x00FF)))
+        {
+            mask = prefixContent[0] ^ (key >> 8);
+            return true;
+        }
+    }
+    return false;
+}
+
+string WINBackupParser::loadMsgImgData(const string& fileName)
+{
+    // decode image data stored in Win PC client
+    if (Utils::isFileExist(fileName))
+    {
+        string fileContent = Utils::readBinaryFile(fileName);
+
+        short mask;
+        if (getWeChatImageMask(fileContent.substr(0, 3), mask))
+        {
+            for (auto& c : fileContent)
+            {
+                c ^= mask;
+            }
+        }
+        return fileContent;
+    }
     return "";
 }

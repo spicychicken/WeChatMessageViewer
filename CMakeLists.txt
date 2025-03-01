@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.1.0)
 # Project
 project(WeChatMessageViewer VERSION 0.1 LANGUAGES C CXX)
 
-find_package(Qt6 COMPONENTS Core Qml Quick Charts REQUIRED)
+find_package(Qt6 COMPONENTS Core Qml Quick Charts Multimedia REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_package(tinyxml2 CONFIG REQUIRED)
@@ -68,6 +68,7 @@ target_link_libraries(WeChatMessageViewer PRIVATE
                 Qt6::Qml
                 Qt6::Quick
                 Qt6::Charts
+                Qt6::Multimedia
                 protobuf::libprotoc
                 protobuf::libprotobuf
                 protobuf::libprotobuf-lite

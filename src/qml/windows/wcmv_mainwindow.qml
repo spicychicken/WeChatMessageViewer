@@ -82,29 +82,30 @@ ApplicationWindow {
 
                     onAccepted: {
                         if (WeChat.initContextFromPath(selectedFolder) == 0) {
-                            loginUserListDialog.active = true
-                            loginUserListDialog.item.loginUserConfirmed.connect(function(loginUser, secretKey) {
-                                loginUserListDialog.destroy()
-                                WeChat.performAsyncOperation(function() {
-                                    WeChat.loadLoginUser(loginUser, secretKey)
-                                }, function() {
-                                    appSidebar.visible = true
-                                    appContent.visible = true
-
-                                    // change head
-                                    if (WeChat.currentLoginUser["headImg"] != "") {
-                                        userHeadImg.source = WeChat.currentLoginUser["headImg"]
-                                    }
-                                    else {
-                                        userHeadImg.source = WeChat.defaultHeadImg
-                                    }
-                                });
-                            })
+                            openLoginUserListDialog()
                         }
                     }
                 }
             }
         }
+    }
+
+    function openLoginUserListDialog() {
+        loginUserListDialog.active = true
+        loginUserListDialog.item.loginUserConfirmed.connect(function(loginUser, secretKey) {
+            loginUserListDialog.destroy()
+            loginUserListDialog.active = false
+
+            if (WeChat.currentLoginUser !== loginUser) {
+                WeChat.performAsyncOperation(function() {
+                    WeChat.loadLoginUser(loginUser, secretKey)
+                }, function() {
+                    appSidebar.visible = true
+                    appContent.visible = true
+                    userHeadImg.source = WeChat.getCurrentLoginUserHeadImgUrl()
+                });
+            }
+        })
     }
 
     // left side
@@ -142,7 +143,7 @@ ApplicationWindow {
                 sourceSize: 54
                 highlightMode: "content"
 
-                // onClicked: screenDesktopComponents.loadScreen()
+                // onClicked: openLoginUserListDialog()
             }
             DesktopSidebarItem {
                 source: "qrc:/assets/icons/message.svg"

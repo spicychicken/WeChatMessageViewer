@@ -15,7 +15,7 @@ public:
     explicit IOSBackupParser(const std::string& path);
 
     bool loadBackup(model::WeChatBackup& backup) override;
-    std::vector<std::string> listLoginUsers(model::WeChatBackup& backup) override;
+    std::vector<std::string> listLoginUserNames(model::WeChatBackup& backup) override;
     model::WeChatLoginUser& loadLoginUser(model::WeChatBackup& backup, const std::string& loginUserName, const std::string& secretKey = "") override;
 
     void loadLoginUsers(model::WeChatBackup& backup) override;
@@ -27,6 +27,7 @@ public:
 
     std::string loadUserHeadImgData(const model::WeChatLoginUser& user, const model::WeChatUser& userOrFriend) override;
     std::string loadUserAudioData(const model::WeChatLoginUser& user, const model::WeChatFriend& afriend, const model::WeChatMessage& message) override;
+    std::string loadMsgImgData(const std::string& fileName) override;
 
 private:
     void loadLoginUsersFromMMDB(std::unordered_map<std::string, model::WeChatLoginUser>& users);

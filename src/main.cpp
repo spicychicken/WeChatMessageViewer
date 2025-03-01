@@ -4,6 +4,7 @@
 
 #include "qt/Screen.h"
 #include "qt/WeChatQt.h"
+#include "qt/WeChatImageProvider.h"
 
 int main(int argc, char *argv[]) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -12,6 +13,9 @@ int main(int argc, char *argv[]) {
 
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
+
+    WeChatImageProvider provider;
+    engine.addImageProvider("wechatimg", &provider);
 
     qmlRegisterSingletonType(QUrl("qrc:/qml/ThemeEngine.qml"), "ThemeEngine", 1, 0, "Theme");
     qmlRegisterSingletonType(QUrl("qrc:/qml/WeChatEngine.qml"), "WeChatEngine", 1, 0, "WeChat");

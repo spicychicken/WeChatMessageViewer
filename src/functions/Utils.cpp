@@ -14,6 +14,7 @@
 
 using std::string;
 using std::ifstream;
+using std::ofstream;
 using std::vector;
 using std::unordered_map;
 using namespace tinyxml2;
@@ -107,6 +108,15 @@ string Utils::readBinaryFile(const string& fileName)
     // file must be exist
     ifstream ifile(fileName.c_str(), std::ios::in | std::ios::binary);
     return string(std::istreambuf_iterator<char>{ifile}, std::istreambuf_iterator<char>{});
+}
+
+void Utils::writeBinaryFile(const std::string& fileName, const std::string& fileContent)
+{
+    ofstream ofile(fileName.c_str(), std::ios::out | std::ios::binary);
+    std::ostreambuf_iterator<char> output_it(ofile);
+    std::copy(fileContent.begin(), fileContent.end(), output_it);
+    ofile.flush();
+    ofile.close();
 }
 
 std::string Utils::timestampToString(int timestamp)
