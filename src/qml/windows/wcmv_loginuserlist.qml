@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 import ThemeEngine
 import WeChatEngine
@@ -124,12 +125,20 @@ Window {
             }
 
             CheckBox {
-                visible: WeChat.openFolderBackupType == WeChatEngine.BackupType_WIN
+                visible: WeChat.openFolderBackupType == WeChat.BackupType_WIN
                 id: automateDetected
                 onClicked: {
                     wechatSecretKey.enabled = !wechatSecretKey.enabled
                 }
                 text: qsTr("Automate detected Secret Key\nplease make sure WeChat App is opened and logined with user you selected !!!")
+            }
+
+            MessageDialog {
+                id: detectedKeyFailed
+                visible: false
+                buttons: MessageDialog.Ok
+                text: "Automate detected Secret Key failed!!!"
+                // informativeText: "currently support version:\n\t3.9.8.25\n\t3.9.9.43\n\t3.9.10.27\n\t3.9.12.17\n\t3.9.12.45\notherwise please input secret key manually"
             }
 
             RowLayout {
@@ -142,7 +151,7 @@ Window {
                     implicitHeight: Theme.componentHeight
                     text: qsTr("Confirm")
                     enabled: {
-                        if (WeChat.openFolderBackupType == WeChatEngine.BackupType_WIN && automateDetected.checkState != Qt.Checked && wechatSecretKey.text == "") {
+                        if (WeChat.openFolderBackupType == WeChat.BackupType_WIN && automateDetected.checkState != Qt.Checked && wechatSecretKey.text == "") {
                             return false
                         }
                         return userListView.currentIndex >= 0
@@ -151,9 +160,15 @@ Window {
                         var secretKey = wechatSecretKey.text
                         if (automateDetected.checkState == Qt.Checked)
                         {
-                            secretKey = ""
+                            secretKey = WeChat.detectSecretKey()
                         }
-                        loginUserConfirmed(userListView.model[userListView.currentIndex], secretKey)
+
+                        if (secretKey != "") {
+                            loginUserConfirmed(userListView.model[userListView.currentIndex], secretKey)
+                        }
+                        else {
+                            detectedKeyFailed.visible = true
+                        }
                     }
                 }
 

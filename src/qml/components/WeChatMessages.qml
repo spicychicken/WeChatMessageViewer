@@ -165,9 +165,12 @@ Loader {
         }
 
         Component.onCompleted: {
-            var friends = WeChat.listFriends(0, 10000)
-            userFriendList.model = friends["msg"].filter(f => f["msgCount"] > 0).sort((a,b) => b["lastTime"].localeCompare(a["lastTime"]))
-            userFriendList.currentIndex = -1
+            WeChat.performAsyncOperation(function() {
+                var friends = WeChat.listFriends(0, 10000)
+                userFriendList.model = friends["msg"].filter(f => f["msgCount"] > 0).sort((a,b) => b["lastTime"].localeCompare(a["lastTime"]))
+                userFriendList.currentIndex = -1
+            }, function() {
+            })
         }
     }
 }

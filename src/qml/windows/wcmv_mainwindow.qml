@@ -71,7 +71,6 @@ ApplicationWindow {
 
                 Loader {
                     id: loginUserListDialog
-                    source: "wcmv_loginuserlist.qml"
                     active: false
                 }
 
@@ -91,9 +90,10 @@ ApplicationWindow {
     }
 
     function openLoginUserListDialog() {
+        loginUserListDialog.source = "wcmv_loginuserlist.qml"
         loginUserListDialog.active = true
         loginUserListDialog.item.loginUserConfirmed.connect(function(loginUser, secretKey) {
-            loginUserListDialog.destroy()
+            loginUserListDialog.source = ""
             loginUserListDialog.active = false
 
             if (WeChat.currentLoginUser !== loginUser) {
@@ -143,7 +143,7 @@ ApplicationWindow {
                 sourceSize: 54
                 highlightMode: "content"
 
-                // onClicked: openLoginUserListDialog()
+                onClicked: openLoginUserListDialog()
             }
             DesktopSidebarItem {
                 source: "qrc:/assets/icons/message.svg"

@@ -204,3 +204,30 @@ string Utils::getXmlNodeByPath(const string& xmlContent, const string& path)
     }
     return value;
 }
+
+string Utils::stringToHexString(const string& input)
+{
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0'); // 设置填充字符为'0'
+    for (char byte : input) {
+        ss << std::setw(2) << static_cast<int>(static_cast<unsigned char>(byte)); // 转换并设置每个字节的宽度为2
+    }
+    return ss.str();
+}
+
+string Utils::hexStringToString(const string& input)
+{
+    std::string result;
+    std::stringstream ss;
+    ss << std::hex << std::uppercase << std::setfill('0');
+    for (size_t i = 0; i < input.length(); i += 2) {
+        std::string byteStr = input.substr(i, 2);
+        unsigned int n;
+        ss << std::hex << byteStr;
+        ss >> n;
+        ss.clear(); // 重置stringstream
+        result.push_back(static_cast<char>(n));
+    }
+    return result;
+}
+

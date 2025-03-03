@@ -38,7 +38,6 @@ private:
 private:
     std::string                                     backupPath;
     std::unordered_map<std::string, std::string>    rawKeys;
-    std::string                                     defaultPass;
 };
 
 }

@@ -68,10 +68,35 @@ void WINMessageParser::parseByText(model::WeChatMessage& msg) const
     // do nothing
 }
 
+// workaround
+void workaroudForThumbSrcRaw(WINBackupArchives& winArchives, WeChatMessage& msg, std::unordered_map<std::string, std::string>& results, const std::string& userName, int start, int end)
+{
+    for (int i = start; i < end; i++)
+    {
+        auto key = "3.1." + std::to_string(i);
+        if (results.count(key) != 0)
+        {
+            if (results[key] == "3")
+            {
+                msg.setMetadata("thumb", winArchives.correctPath(userName, results["3.2." + std::to_string(i)]));
+            }
+            else if (results[key] == "4")
+            {
+                msg.setMetadata("src", winArchives.correctPath(userName, results["3.2." + std::to_string(i)]));
+            }
+            else if (results[key] == "18")
+            {
+                msg.setMetadata("raw", winArchives.correctPath(userName, results["3.2." + std::to_string(i)]));
+            }
+        }
+    }
+}
+
 void WINMessageParser::parseByImage(model::WeChatMessage& msg) const
 {
     auto results = Protobuf::toMap(msg.getExtra());
-    if (afriend.Type() == wechat::model::UserType::UserType_Group)
+    workaroudForThumbSrcRaw(winArchives, msg, results, user.UserName(), 1, 5);
+    /* if (afriend.Type() == wechat::model::UserType::UserType_Group)
     {
         if (results["3.1.2"] == "4")
         {
@@ -94,7 +119,7 @@ void WINMessageParser::parseByImage(model::WeChatMessage& msg) const
             msg.setMetadata("thumb", winArchives.correctPath(user.UserName(), results["3.2.3"]));
         }
         msg.setMetadata("src", winArchives.correctPath(user.UserName(), results["3.2.2"]));
-    }
+    }   */
 }
 
 void WINMessageParser::parseByAudio(model::WeChatMessage& msg) const
@@ -109,7 +134,8 @@ void WINMessageParser::parseByAudio(model::WeChatMessage& msg) const
 void WINMessageParser::parseByVideo(model::WeChatMessage& msg) const
 {
     auto results = Protobuf::toMap(msg.getExtra());
-    if (afriend.Type() == wechat::model::UserType::UserType_Group)
+    workaroudForThumbSrcRaw(winArchives, msg, results, user.UserName(), 1, 5);
+    /* if (afriend.Type() == wechat::model::UserType::UserType_Group)
     {
         // [To-Do] workaround
         if (results["3.2.1"].substr(0, 11) == "<msgsource>")
@@ -129,7 +155,7 @@ void WINMessageParser::parseByVideo(model::WeChatMessage& msg) const
     {
         msg.setMetadata("thumb", winArchives.correctPath(user.UserName(), results["3.2.2"]));
         msg.setMetadata("src", winArchives.correctPath(user.UserName(), results["3.2.3"]));
-    }
+    }   */
 }
 
 void WINMessageParser::parseByEmoticon(model::WeChatMessage& msg) const

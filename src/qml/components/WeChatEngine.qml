@@ -17,6 +17,10 @@ Item {
     property var currentLoginUser
     property string currentLoginUserName
 
+    function detectSecretKey() {
+        return pWeChat.detectLoginUserSecretKey()
+    }
+
     function initContextFromPath(folder) {
         var index = pWeChat.detectBackupType(folder);
         if (index >= 0 && index < 2) {

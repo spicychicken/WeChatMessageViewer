@@ -66,7 +66,6 @@ static void loadDBPassFromLocalToMap(unordered_map<string, string>& rawKeys)
 bool WINBackupParser::loadBackup(model::WeChatBackup& backup)
 {
     backup.setBackupType(wechat::model::BackupType::BackupType_WIN);
-
     backup.setMetadata("rawKey", details::detectSqliteRawKey());
 
     // load dbpass from local json

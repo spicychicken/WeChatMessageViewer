@@ -189,6 +189,8 @@ public:
     void setSecretKey(const std::string& secretKey)     { this->secretKey = secretKey; }
     const std::string getSecretKey() const              { return secretKey; }
 
+    void cleanup();
+
 private:
     std::vector<model::WeChatFriend>            friends;
     std::unordered_map<std::string, int>        idToIndexs;
@@ -220,6 +222,8 @@ public:
     bool metadataExist(const std::string& tag)                          { return metadatas.count(tag) != 0; }
     void setMetadata(const std::string& tag, const std::string& data)   { metadatas[tag] = data; }
     std::string getMetadata(const std::string& tag)                     { return metadatas[tag]; }
+
+    void cleanup();
 
 private:
     std::unordered_map<std::string, model::WeChatLoginUser>     loginUsers;

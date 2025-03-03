@@ -3,6 +3,7 @@
 #include <QDateTime>
 
 #include "wechat/WeChatContext.h"
+#include "functions/Utils.h"
 
 WeChatQt::WeChatQt()
 {
@@ -35,8 +36,8 @@ QStringList WeChatQt::listLoginUserNames()
 
 QString WeChatQt::detectLoginUserSecretKey()
 {
-    // only for windows
-    return QString::fromStdString(sBackup->getMetadata("rawKey"));
+    // only for windows, and convert to hex string
+    return QString::fromStdString(Utils::stringToHexString(sBackup->getMetadata("rawKey")));
 }
 
 QVariantMap weChatUserToQVariantMap(const wechat::model::WeChatUser* user)
@@ -64,7 +65,8 @@ QVariantMap metadatasToVariantMap(const std::unordered_map<std::string, std::str
 
 QVariantMap WeChatQt::loadLoginUser(const QString& loginUserName, const QString& secretKey)
 {
-    wechat::model::WeChatLoginUser* loginUser = sWECHAT.loadLoginUser(loginUserName.toStdString(), secretKey.toStdString());
+    wechat::model::WeChatLoginUser* loginUser = sWECHAT.loadLoginUser(loginUserName.toStdString(), 
+                                                            Utils::hexStringToString(secretKey.toStdString()));
     
     // convert WeChatLoginUser to QVariantMap
     QVariantMap  loginUserMap = weChatUserToQVariantMap(loginUser);

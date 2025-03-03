@@ -27,6 +27,14 @@ BackupType WeChatContext::detectBackupType(const string& path)
 
 bool WeChatContext::initContextFromPath(const string& path)
 {
+    // do necessary cleanup
+    if (backupParser)
+    {
+        delete backupParser;
+    }
+
+    backup.cleanup();
+
     backupParser = parser::createParser(path);
     if (backupParser) {
         return backupParser->loadBackup(backup);

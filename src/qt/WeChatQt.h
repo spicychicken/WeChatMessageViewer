@@ -18,6 +18,7 @@ public:
     Q_INVOKABLE QStringList listLoginUserNames();
 
     Q_INVOKABLE QString detectLoginUserSecretKey();
+
     Q_INVOKABLE QVariantMap loadLoginUser(const QString& loginUserName, const QString& secretKey);
     Q_INVOKABLE QVariantMap listFriends(int start, int count, bool filterZero);
     Q_INVOKABLE QVariantMap listMessages(const QString& friendID, int page, int count);

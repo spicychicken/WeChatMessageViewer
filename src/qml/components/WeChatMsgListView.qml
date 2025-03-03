@@ -134,6 +134,14 @@ ListView {
                 source: WeChat.getMsgVideoThumbImageUrl(rowMetadataData)
                 smooth: true
 
+                Image {
+                    visible: parent.visible
+                    width: parent.width > parent.height ? parent.height : parent.width
+                    height: parent.width > parent.height ? parent.height : parent.width
+                    source: "qrc:/assets/icons/play.png"
+                    anchors.centerIn: parent
+                }
+
                 Component.onCompleted: {
                     if (msgImage.sourceSize.width > imageWidthHeight || msgImage.sourceSize.height > imageWidthHeight)
                     {
@@ -155,9 +163,12 @@ ListView {
                         msgVideo.width = msgImage.width
                         msgVideo.height = msgImage.height
 
-                        if (WeChat.getMsgVideoUrl(rowMetadataData) !== "") {
+                        if (msgVideo.source == "") {
+                            msgVideo.source = WeChat.getMsgVideoUrl(rowMetadataData)
+                        }
+                        
+                        if (msgVideo.source != "") {
                             showImage = false
-                            msgVideo.source = "file:///" + WeChat.getMsgVideoUrl(rowMetadataData)
                             msgVideo.play()
                         }
                     }
@@ -171,12 +182,17 @@ ListView {
                     anchors.fill: parent
                     onClicked: {
                         if (msgVideo.playbackState === MediaPlayer.PlayingState) {
+                            showImage = true
                             msgVideo.pause()
                         }
                         else {
                             msgVideo.play()
                         }
                     }
+                }
+
+                onStopped: function() {
+                    showImage = true
                 }
 
                 onErrorOccurred: function(error, errorString) {

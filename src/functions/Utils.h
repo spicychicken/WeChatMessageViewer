@@ -26,6 +26,9 @@ namespace Utils
     std::string removeHtmlTags(const std::string& htmls);
     std::string getXmlAttributeByPath(const std::string& xmlContent, const std::string& path, const std::string& attr);
     std::string getXmlNodeByPath(const std::string& xmlContent, const std::string& path);
+
+    std::string stringToHexString(const std::string& input);
+    std::string hexStringToString(const std::string& input);
 };
 
 #endif // UTILS_H
