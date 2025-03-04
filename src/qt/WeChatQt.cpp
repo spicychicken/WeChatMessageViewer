@@ -1,6 +1,7 @@
 #include "WeChatQt.h"
 
 #include <QDateTime>
+#include <QFile>
 
 #include "wechat/WeChatContext.h"
 #include "functions/Utils.h"
@@ -47,6 +48,7 @@ QVariantMap weChatUserToQVariantMap(const wechat::model::WeChatUser* user)
     variantMap["userName"] = QString::fromStdString(user->UserName());
     variantMap["displayName"] = QString::fromStdString(user->DisplayName());
     variantMap["headImg"] = QString::fromStdString(user->HeadImg());
+    variantMap["localHeadImg"] = QString::fromStdString(user->LocalHeadImg());
     variantMap["msgCount"] = user->RecordCount();
     variantMap["beginTime"] = QDateTime::fromSecsSinceEpoch(user->BeginTime()).toString("yyyy-MM-dd hh:mm:ss");
     variantMap["lastTime"] = QDateTime::fromSecsSinceEpoch(user->LastTime()).toString("yyyy-MM-dd hh:mm:ss");
@@ -123,7 +125,7 @@ QVariantMap WeChatQt::listMessages(const QString& friendID, int page, int count)
     return results;
 }
 
-void WeChatQt::playAudio(const QString& friendID, const QVariantMap& message)
+bool WeChatQt::playAudio(const QString& friendID, const QVariantMap& message)
 {
     wechat::model::WeChatMessage weChatMessage;
     if (message.contains("msgSvrID")) {
@@ -136,7 +138,13 @@ void WeChatQt::playAudio(const QString& friendID, const QVariantMap& message)
         weChatMessage.setMetadata("dbPath", message["dbPath"].toString().toStdString());
     }
 
-    sWECHAT.playAudio(friendID.toStdString(), weChatMessage);
+    return sWECHAT.playAudio(friendID.toStdString(), weChatMessage);
+}
+
+bool WeChatQt::fileExist(const QString& fileName)
+{
+    QFile file(fileName);
+    return file.exists();
 }
 
 WeChatQt* WeChatQt::instance() {

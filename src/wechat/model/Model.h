@@ -43,10 +43,6 @@ public:
 
     std::string HeadImg() const
     {
-        if (localHeadImg != "")
-        {
-            return localHeadImg;
-        }
         if (headImgUrlHD != "")
         {
             return headImgUrlHD;

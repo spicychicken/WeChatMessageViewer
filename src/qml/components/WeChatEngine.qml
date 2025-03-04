@@ -55,6 +55,9 @@ Item {
         if ("headImg" in user && user["headImg"] != "") {
             return user["headImg"]
         }
+        else if ("localHeadImg" in user && user["localHeadImg"] != "" && fileExist(user["localHeadImg"])) {
+            return "file:///" + user["localHeadImg"]
+        }
         return defaultHeadImg
     }
 
@@ -84,18 +87,18 @@ Item {
 
     function getMsgImageUrl(metadata) {
         if (openFolderBackupType == WeChatEngine.BackupType_WIN) {
-            if (metadata["thumb"] !== "") {
+            if (metadata["thumb"] !== "" && fileExist(metadata["thumb"])) {
                 return "image://wechatimg/" + metadata["thumb"]
             }
-            else if (metadata["src"] !== "") {
+            else if (metadata["src"] !== "" && fileExist(metadata["src"])) {
                 return "image://wechatimg/" + metadata["src"]
             }
         }
         else {
-            if (metadata["thumb"] !== "") {
+            if (metadata["thumb"] !== "" && fileExist(metadata["thumb"])) {
                 return "file:///" + metadata["thumb"]
             }
-            else if (metadata["src"] !== "") {
+            else if (metadata["src"] !== "" && fileExist(metadata["src"])) {
                 return "file:///" + metadata["src"]
             }
         }
@@ -103,19 +106,23 @@ Item {
     }
 
     function getMsgVideoThumbImageUrl(metadata) {
-        if ("thumb" in metadata && metadata["thumb"] != "") {
+        if ("thumb" in metadata && metadata["thumb"] != "" && fileExist(metadata["thumb"])) {
             return "file:///" + metadata["thumb"]
         }
         return notExistImageOrVideo
     }
 
     function getMsgVideoUrl(metadata) {
-        if ("raw" in metadata && metadata["raw"] != "") {
+        if ("src" in metadata && metadata["src"] != "" && fileExist(metadata["src"])) {
             return "file:///" + metadata["src"]
         }
-        else if ("src" in metadata && metadata["src"] != "") {
-            return "file:///" + metadata["src"]
+        else if ("raw" in metadata && metadata["raw"] != "" && fileExist(metadata["raw"])) {
+            return "file:///" + metadata["raw"]
         }
         return ""
+    }
+
+    function fileExist(fileName) {
+        return pWeChat.fileExist(fileName)
     }
 }

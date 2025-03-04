@@ -163,7 +163,7 @@ Window {
                             secretKey = WeChat.detectSecretKey()
                         }
 
-                        if (secretKey != "") {
+                        if (secretKey != "" || WeChat.openFolderBackupType != WeChat.BackupType_WIN) {
                             loginUserConfirmed(userListView.model[userListView.currentIndex], secretKey)
                         }
                         else {

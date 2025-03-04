@@ -23,7 +23,9 @@ public:
     Q_INVOKABLE QVariantMap listFriends(int start, int count, bool filterZero);
     Q_INVOKABLE QVariantMap listMessages(const QString& friendID, int page, int count);
 
-    Q_INVOKABLE void playAudio(const QString& friendID, const QVariantMap& message);
+    Q_INVOKABLE bool playAudio(const QString& friendID, const QVariantMap& message);
+
+    Q_INVOKABLE bool fileExist(const QString& fileName);
 
     static WeChatQt* instance();
 };

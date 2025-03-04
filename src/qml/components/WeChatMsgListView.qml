@@ -105,11 +105,22 @@ ListView {
                     }
                     else if (msgImage.sourceSize.width < imageWidthHeight && msgImage.sourceSize.height < imageWidthHeight)
                     {
-                        var ratio = Math.max(imageWidthHeight / msgImage.sourceSize.width, imageWidthHeight / msgImage.sourceSize.height)
+                        var ratio = Math.min(imageWidthHeight / msgImage.sourceSize.width, imageWidthHeight / msgImage.sourceSize.height)
                         msgImage.sourceSize = Qt.size(msgImage.sourceSize.width * ratio, msgImage.sourceSize.height * ratio)
+                    }
+                    else {
+                        console.log("here")
                     }
                     msgImage.width = msgImage.sourceSize.width
                     msgImage.height = msgImage.sourceSize.height
+                }
+
+                MouseArea {
+                    cursorShape: Qt.PointingHandCursor
+
+                    anchors.fill: parent
+                    onClicked: {
+                    }
                 }
             }
         }
@@ -135,11 +146,12 @@ ListView {
                 smooth: true
 
                 Image {
-                    visible: parent.visible
+                    visible: parent.visible && WeChat.getMsgVideoUrl(rowMetadataData) != ""
                     width: parent.width > parent.height ? parent.height : parent.width
                     height: parent.width > parent.height ? parent.height : parent.width
                     source: "qrc:/assets/icons/play.png"
                     anchors.centerIn: parent
+                    opacity: 0.8
                 }
 
                 Component.onCompleted: {
@@ -158,6 +170,8 @@ ListView {
                 }
 
                 MouseArea {
+                    cursorShape: Qt.PointingHandCursor
+
                     anchors.fill: parent
                     onClicked: {
                         msgVideo.width = msgImage.width
@@ -179,6 +193,8 @@ ListView {
                 id: msgVideo
                 visible: !showImage
                 MouseArea {
+                    cursorShape: Qt.PointingHandCursor
+
                     anchors.fill: parent
                     onClicked: {
                         if (msgVideo.playbackState === MediaPlayer.PlayingState) {
@@ -208,23 +224,68 @@ ListView {
         Row {
             width: rowDelegate.contentWidth
             layoutDirection: isSender ? Qt.RightToLeft : Qt.LeftToRight
-            Button {
-                text: rowData["metadatas"]["seconds"]
-                
-                background: Rectangle {
-                    implicitWidth: 100
-                    implicitHeight: 40
-                    border.color: control.down ? "#17a81a" : "#21be2b"
-                    border.width: 1
-                    radius: 5
+
+            Rectangle {
+                radius: 5
+                width: msgText.width
+                height: msgText.height
+
+                color: isSender ? "#95ec69" : "#ffffff"
+
+                // little triangle point to sender
+                Rectangle {
+                    width: 10
+                    height: 10
+                    y: 12
+                    anchors.horizontalCenter: isSender ? parent.right :parent.left
+                    rotation: 45
+                    color: isSender ? "#95ec69" : "#ffffff"
                 }
 
-                onClicked: {
-                    var message = {}
-                    message["src"] = rowData["metadatas"]["src"]
-                    message["msgSvrID"] = rowData["msgSvrID"]
-                    message["dbPath"] = rowData["metadatas"]["dbPath"]
-                    WeChat.playAudio(currentFriendID, message)
+                Image {
+                    // anchors.horizontalCenter: isSender ? parent.right :parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    source: "qrc:/assets/icons/sound.svg"
+                    x: isSender ? 100 - 10 - 16 : 10
+                    width: 16
+                    height: 20
+
+                    transform: Scale {
+                        origin.x: isSender ? 8 : 0
+                        xScale: isSender ? -1 : 1
+                    }
+                }
+
+                TextArea {
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: isSender ? 30 : 30
+                    padding: 10
+                    id: msgText
+                    readOnly: true
+                    text: rowData["metadatas"]["seconds"] + "\""
+                    textFormat: TextArea.PlainText
+                    font.pixelSize: Theme.fontSizeContentBig
+                    color: Theme.colorText
+
+                    implicitWidth: 100
+                    implicitHeight: 40
+
+                    MouseArea {
+                        cursorShape: Qt.PointingHandCursor
+
+                        anchors.fill: parent
+                        onClicked: {
+                            var message = {}
+                            message["src"] = rowData["metadatas"]["src"]
+                            message["msgSvrID"] = rowData["msgSvrID"]
+                            message["dbPath"] = rowData["metadatas"]["dbPath"]
+                            if (!WeChat.playAudio(currentFriendID, message)) {
+                                // msgText.text = "Audio Not Exist!!!"
+                                // show toast or other
+                            }
+                        }
+                    }
                 }
             }
         }

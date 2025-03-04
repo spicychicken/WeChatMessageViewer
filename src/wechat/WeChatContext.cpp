@@ -76,20 +76,26 @@ vector<WeChatMessage> WeChatContext::listMessages(const string& friendID, int pa
     return sParser->loadFriendMessages(*currentUser, aFriend, page, count);
 }
 
-void WeChatContext::playAudio(const std::string& friendID, const WeChatMessage& message)
+bool WeChatContext::playAudio(const std::string& friendID, const WeChatMessage& message)
 {
     if (backup.getBackupType() == BackupType::BackupType_WIN)
     {
         auto& aFriend = currentUser->getFriend(friendID);
         auto data = backupParser->loadUserAudioData(*currentUser, aFriend, message);
-        audio::OpenAL::singlePlaySilkFromData(data);
+        if (!data.empty())
+        {
+            audio::OpenAL::singlePlaySilkFromData(data);
+            return true;
+        }
     }
     else {
         if (!message.getMetadata("src").empty())
         {
             audio::OpenAL::singlePlaySilkFromPath(message.getMetadata("src"));
+            return true;
         }
     }
+    return false;
 }
 
 std::string WeChatContext::loadMsgImgData(const std::string& fileName)

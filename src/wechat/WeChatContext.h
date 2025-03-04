@@ -26,7 +26,7 @@ public:
     const std::vector<model::WeChatFriend>& listFriends();
     std::vector<model::WeChatMessage> listMessages(const std::string& friendID, int start, int count);
 
-    void playAudio(const std::string& friendID, const model::WeChatMessage& message);
+    bool playAudio(const std::string& friendID, const model::WeChatMessage& message);
     std::string loadMsgImgData(const std::string& fileName);
 
     ////////////////////////////////////////////

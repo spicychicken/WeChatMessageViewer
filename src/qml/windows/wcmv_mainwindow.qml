@@ -103,6 +103,8 @@ ApplicationWindow {
                     appSidebar.visible = true
                     appContent.visible = true
                     userHeadImg.source = WeChat.getCurrentLoginUserHeadImgUrl()
+                    wechatMessages.unloadScreen()
+                    wechatFriends.unloadScreen()
                 });
             }
         })

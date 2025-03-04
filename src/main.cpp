@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QIcon>
 
 #include "qt/Screen.h"
 #include "qt/WeChatQt.h"
@@ -14,8 +15,15 @@ int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
-    WeChatImageProvider provider;
-    engine.addImageProvider("wechatimg", &provider);
+    app.setApplicationName("WeChatMessageViewer");
+    app.setApplicationDisplayName("WeChatMessageViewer");
+    app.setOrganizationName("xxwp");
+    app.setOrganizationDomain("xxwp");
+
+    QIcon appIcon(":/assets/icons/app.png");
+    app.setWindowIcon(appIcon);
+
+    engine.addImageProvider("wechatimg", new WeChatImageProvider());
 
     qmlRegisterSingletonType(QUrl("qrc:/qml/ThemeEngine.qml"), "ThemeEngine", 1, 0, "Theme");
     qmlRegisterSingletonType(QUrl("qrc:/qml/WeChatEngine.qml"), "WeChatEngine", 1, 0, "WeChat");
@@ -32,4 +40,6 @@ int main(int argc, char *argv[]) {
     engine.load(url);
 
     return app.exec();
+
+    return 0;
 }

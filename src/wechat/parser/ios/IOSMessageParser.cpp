@@ -59,6 +59,9 @@ void IOSMessageParser::parseByAudio(model::WeChatMessage& msg) const
     {
         msg.setMetadata("src", path);
     }
+
+    int seconds = std::stoi(Utils::getXmlAttributeByPath(msg.getContent(), "/msg/voicemsg", "voicelength")) / 1000 + 0.5;
+    msg.setMetadata("seconds", std::to_string(seconds));
 }
 
 void IOSMessageParser::parseByVideo(model::WeChatMessage& msg) const
@@ -83,7 +86,7 @@ void IOSMessageParser::parseByVideo(model::WeChatMessage& msg) const
 
 void IOSMessageParser::parseByEmoticon(model::WeChatMessage& msg) const
 {
-
+    msg.setContent("[Emoticon]");
 }
 
 void IOSMessageParser::parseByAppMsg(model::WeChatMessage& msg) const
@@ -101,6 +104,9 @@ void IOSMessageParser::parseByAppMsg(model::WeChatMessage& msg) const
     msg.setContent(title);
     msg.setMetadata("src", url);
     msg.setMetadata("thumb", thumburl);
+
+    // [To-Do]
+    msg.setContent("[App Message]");
 }
 
 void IOSMessageParser::parseBySystem(model::WeChatMessage& msg) const
@@ -120,8 +126,13 @@ void IOSMessageParser::parseBySystem(model::WeChatMessage& msg) const
         newC = Utils::removeHtmlTags(oldC);
     }
     msg.setContent(newC);
+
+    // [To-Do]
+    msg.setContent("[System Message]");
 }
 
 void IOSMessageParser::parseByOther(model::WeChatMessage& msg) const
 {
+    // [To-Do]
+    msg.setContent("[Other]");
 }

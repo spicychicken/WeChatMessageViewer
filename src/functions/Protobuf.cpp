@@ -134,8 +134,8 @@ static void toMapImpl(const std::string& parentID, const std::string& content, s
     if (level > 0)
     {
         Message* message = initializer.clone();
-        // if (message->ParseFromString(content) || message->ParseFromString(u8"\n" + content))
-        if (message->ParseFromString(content))
+        if (message->ParseFromString(content) || message->ParseFromString(u8"\n" + content))
+        // if (message->ParseFromString(content))
         {
             const UnknownFieldSet& ufs = message->GetReflection()->GetUnknownFields(*message);
             for (int i = 0; i < ufs.field_count(); ++i)
@@ -170,10 +170,10 @@ static void toMapImpl(const std::string& parentID, const std::string& content, s
     }
 }
 
-std::unordered_map<std::string, std::string> Protobuf::toMap(const std::string& content)
+std::unordered_map<std::string, std::string> Protobuf::toMap(const std::string& content, int level)
 {
     std::unordered_map<std::string, std::string> results;
     std::unordered_map<std::string, int> counts;
-    toMapImpl("", content, results, counts, 2);
+    toMapImpl("", content, results, counts, level);
     return results;
 }
