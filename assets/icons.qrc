@@ -7,5 +7,7 @@
         <file>icons/exit.svg</file>
         <file>icons/unknown.png</file>
         <file>icons/image-not-found.png</file>
+        <file>icons/app.png</file>
+        <file>icons/play.png</file>
     </qresource>
 </RCC>
