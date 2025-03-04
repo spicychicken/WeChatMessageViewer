@@ -26,7 +26,7 @@ void parser::BackupFileParser::updateLoginUserRecord(model::WeChatLoginUser& use
     user.setLastTime(lastTime);
 }
 
-static model::BackupType detectBackupType(const std::string& path)
+model::BackupType parser::detectBackupType(const std::string& path)
 {
     if (Utils::isFileExist(path + "/Manifest.db"))
     {

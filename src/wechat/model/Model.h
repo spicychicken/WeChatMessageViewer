@@ -36,9 +36,19 @@ public:
     std::string UserName() const        { return userName; }
     std::string NickName() const        { return nickName; }
     std::string AliasName() const       { return aliasName; }
+
     std::string LocalHeadImg() const    { return localHeadImg; }
     std::string HeadImgUrl() const      { return headImgUrl; }
     std::string HeadImgUrlHD() const    { return headImgUrlHD; }
+
+    std::string HeadImg() const
+    {
+        if (headImgUrlHD != "")
+        {
+            return headImgUrlHD;
+        }
+        return headImgUrl;
+    }
 
     std::string DisplayName() const
     {
@@ -172,14 +182,20 @@ public:
 
     const std::vector<model::WeChatFriend>& getFriends() const      { return friends; }
 
+    void setSecretKey(const std::string& secretKey)     { this->secretKey = secretKey; }
+    const std::string getSecretKey() const              { return secretKey; }
+
+    void cleanup();
+
 private:
     std::vector<model::WeChatFriend>            friends;
     std::unordered_map<std::string, int>        idToIndexs;
+    std::string                                 secretKey;
 };
 
 enum class BackupType
 {
-    BackupType_IOS,
+    BackupType_IOS = 0,
     BackupType_WIN,
     BackupType_UNKNOWN,
 };
@@ -189,9 +205,6 @@ class WeChatBackup
 public:
     void setBackupType(BackupType type)                               { backupType = type; }
     void setBackupPath(const std::string& path)                       { backupPath = path; }
-    void setITuneVersion(const std::string& version)                  { iTuneVersion = version; }
-    void setProductVersion(const std::string& version)                { productVersion = version; }
-    void setLastBackupDate(const std::string& date)                   { lastBackupDate = date; }
 
     void setLoginUsers(std::unordered_map<std::string, model::WeChatLoginUser>&& loginUsers)    { this->loginUsers = loginUsers; }
 
@@ -199,16 +212,20 @@ public:
     model::WeChatLoginUser& getLoginUserByID(const std::string& userID);
 
     const std::unordered_map<std::string, model::WeChatLoginUser> getLoginUsers() const         { return loginUsers; }
-    std::string getITuneVersion() const                 { return iTuneVersion; }
-    std::string getProductVersion() const               { return productVersion; }
-    std::string getLastBackupDate() const               { return lastBackupDate; }
+
     BackupType getBackupType() const                    { return backupType; }
+
+    bool metadataExist(const std::string& tag)                          { return metadatas.count(tag) != 0; }
+    void setMetadata(const std::string& tag, const std::string& data)   { metadatas[tag] = data; }
+    std::string getMetadata(const std::string& tag)                     { return metadatas[tag]; }
+
+    void cleanup();
 
 private:
     std::unordered_map<std::string, model::WeChatLoginUser>     loginUsers;
-    std::string                     iTuneVersion;
-    std::string                     productVersion;
-    std::string                     lastBackupDate;
+
+    // iOS: iTuneVersion, productVersion, lastBackupDate
+    std::unordered_map<std::string, std::string>        metadatas;
 
     std::string                     backupPath;
     BackupType                      backupType;
@@ -231,16 +248,15 @@ enum class ChatMessageType
 class WeChatMessage
 {
 public:
-    const WeChatUser* getSender() const               { return sender; }
-    std::string getContent() const                    { return content; }
-    std::string getMsgSvrID() const                   { return msgSvrID; }
-    int getTime() const                               { return msgTime; }
-    ChatMessageType getType() const                   { return type; }
-    std::string getExtra() const                      { return extra; }
-    std::string getDbPath() const                     { return dbPath; }
+    const WeChatUser* getSender() const                             { return sender; }
+    std::string getContent() const                                  { return content; }
+    std::string getMsgSvrID() const                                 { return msgSvrID; }
+    int getTime() const                                             { return msgTime; }
+    ChatMessageType getType() const                                 { return type; }
+    std::string getExtra() const                                    { return extra; }
+    std::string getMetadata(const std::string& tag) const           { return metadatas.at(tag); }
 
-    std::string getSrc() const                        { return src; }
-    std::string getThumb() const                      { return thumb; }
+    const std::unordered_map<std::string, std::string>& getMetadatas() const   { return metadatas; }
 
 public:
     void setTime(int t)                               { this->msgTime = t; }
@@ -249,10 +265,8 @@ public:
     void setMsgSvrID(const std::string& id)           { this->msgSvrID = id; }
     void setType(int type);
     void setExtra(const std::string& extra)           { this->extra = extra; }
-    void setDbPath(const std::string& dbPath)         { this->dbPath = dbPath; }
 
-    void setSrc(const std::string& src)               { this->src = src; }
-    void setThumb(const std::string& thumb)           { this->thumb = thumb; }
+    void setMetadata(const std::string& tag, const std::string& data)   { metadatas[tag] = data; }
 
 private:
     ChatMessageType                 type;
@@ -262,11 +276,8 @@ private:
     int                             msgTime;
     std::string                     extra;
 
-    std::string                     dbPath;
-
-    // 
-    std::string                     src;
-    std::string                     thumb;
+    // dbPath, src, thumb
+    std::unordered_map<std::string, std::string>        metadatas;
 };
 
 }   // wechat::model

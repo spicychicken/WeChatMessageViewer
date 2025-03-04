@@ -10,7 +10,8 @@
 using namespace Plist;
 
 template<class NodeType>
-NodeType* plistAsType(PList::Node* node) {
+NodeType* plistAsType(PList::Node* node)
+{
     return dynamic_cast<NodeType*>(node);
 }
 

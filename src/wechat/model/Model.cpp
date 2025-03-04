@@ -80,6 +80,11 @@ vector<WeChatFriend> WeChatLoginUser::getTopFriends(UserType type, int count, st
     return results;
 }
 
+void WeChatLoginUser::cleanup()
+{
+    friends.clear();
+}
+
 WeChatFriend& WeChatFriend::getMember(const string& memberID)
 {
     return members[memberID];
@@ -95,21 +100,19 @@ bool WeChatBackup::loginUserExistByID(const string& userID)
     return loginUsers.count(userID) != 0;
 }
 
+void WeChatBackup::cleanup()
+{
+    for (auto& user : loginUsers)
+    {
+        user.second.cleanup();
+    }
+    loginUsers.clear();
+}
+
 WeChatLoginUser& WeChatBackup::getLoginUserByID(const string& userID)
 {
     return loginUsers[userID];
 }
-
-/*
-std::string WeChatMessage::getSenderName() const
-{
-    if (sender)
-    {
-        return sender->DisplayName();
-    }
-    return senderName;
-}
-*/
 
 void WeChatMessage::setType(int type)
 {

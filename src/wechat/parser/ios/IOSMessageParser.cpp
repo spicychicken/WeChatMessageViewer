@@ -43,11 +43,11 @@ void IOSMessageParser::parseByImage(model::WeChatMessage& msg) const
     string path;
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".pic", path))
     {
-        msg.setSrc(path);
+        msg.setMetadata("src", path);
     }
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".pic_thum", path))
     {
-        msg.setThumb(path);
+        msg.setMetadata("thumb", path);
     }
 }
 
@@ -57,8 +57,11 @@ void IOSMessageParser::parseByAudio(model::WeChatMessage& msg) const
     string path;
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".aud", path))
     {
-        msg.setSrc(path);
+        msg.setMetadata("src", path);
     }
+
+    int seconds = std::stoi(Utils::getXmlAttributeByPath(msg.getContent(), "/msg/voicemsg", "voicelength")) / 1000 + 0.5;
+    msg.setMetadata("seconds", std::to_string(seconds));
 }
 
 void IOSMessageParser::parseByVideo(model::WeChatMessage& msg) const
@@ -73,17 +76,17 @@ void IOSMessageParser::parseByVideo(model::WeChatMessage& msg) const
     string path;
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".mp4", path))
     {
-        msg.setSrc(path);
+        msg.setMetadata("src", path);
     }
     if (iosArchives.getAbsolutePathByRelativePath(baseFileName + ".video_thum", path))
     {
-        msg.setThumb(path);
+        msg.setMetadata("thumb", path);
     }
 }
 
 void IOSMessageParser::parseByEmoticon(model::WeChatMessage& msg) const
 {
-
+    msg.setContent("[Emoticon]");
 }
 
 void IOSMessageParser::parseByAppMsg(model::WeChatMessage& msg) const
@@ -99,8 +102,11 @@ void IOSMessageParser::parseByAppMsg(model::WeChatMessage& msg) const
     string thumburl = Utils::getXmlNodeByPath(msg.getContent(), "/msg/appmsg/thumburl");
     
     msg.setContent(title);
-    msg.setSrc(url);
-    msg.setThumb(thumburl);
+    msg.setMetadata("src", url);
+    msg.setMetadata("thumb", thumburl);
+
+    // [To-Do]
+    msg.setContent("[App Message]");
 }
 
 void IOSMessageParser::parseBySystem(model::WeChatMessage& msg) const
@@ -120,8 +126,13 @@ void IOSMessageParser::parseBySystem(model::WeChatMessage& msg) const
         newC = Utils::removeHtmlTags(oldC);
     }
     msg.setContent(newC);
+
+    // [To-Do]
+    msg.setContent("[System Message]");
 }
 
 void IOSMessageParser::parseByOther(model::WeChatMessage& msg) const
 {
+    // [To-Do]
+    msg.setContent("[Other]");
 }

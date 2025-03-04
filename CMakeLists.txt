@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.1.0)
 # Project
 project(WeChatMessageViewer VERSION 0.1 LANGUAGES C CXX)
 
-find_package(Qt6 COMPONENTS Widgets LinguistTools REQUIRED)
+find_package(Qt6 COMPONENTS Core Qml Quick Charts Multimedia REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_package(tinyxml2 CONFIG REQUIRED)
@@ -13,10 +13,6 @@ find_package(jsoncpp CONFIG REQUIRED)
 # OpenAL
 find_package(OpenAL CONFIG REQUIRED)
 
-# uic文件 搜索路径
-set(CMAKE_AUTOUIC_SEARCH_PATHS src/qtui/designer)
-
-set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
@@ -27,27 +23,16 @@ include_directories(thirdparty/silk/interface)
 
 add_definitions(-DMMKV_DISABLE_CRYPT)
 
-# ---------------------------------------------------------------
-# Include ts file
-file(
-    GLOB_RECURSE _ts_list 
-    LIST_DIRECTORIES false
-    "${CMAKE_SOURCE_DIR}/src/qtui/designer/translations/*.ts*"
-)
-
-set_source_files_properties(${_ts_list} PROPERTIES OUTPUT_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/translations")
-configure_file(src/qtui/designer/translations.qrc ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
-qt_add_translation(qm_files ${_ts_list})
-add_custom_target(translations DEPENDS ${qm_files})
-
-# ---------------------------------------------------------------
-# Include ui file
+# UI sources
 file(
     GLOB_RECURSE _ui_list 
     LIST_DIRECTORIES false
-    "${CMAKE_SOURCE_DIR}/src/qtui/designer/*.ui*"
-    "${CMAKE_SOURCE_DIR}/src/qtui/designer/resources.qrc*"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qml/components.qrc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qml/windows.qrc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/assets/icons.qrc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/assets/images.qrc"
 )
+
 # ---------------------------------------------------------------
 # Include sources / headers
 file(
@@ -64,7 +49,6 @@ file(
 add_executable(WeChatMessageViewer
     ${_source_list}
     ${_ui_list}
-    ${CMAKE_CURRENT_BINARY_DIR}/translations.qrc
 )
 
 set_target_properties(WeChatMessageViewer PROPERTIES
@@ -80,7 +64,11 @@ if(WIN32)
 endif()
 
 target_link_libraries(WeChatMessageViewer PRIVATE 
-                Qt6::Widgets
+                Qt6::Core
+                Qt6::Qml
+                Qt6::Quick
+                Qt6::Charts
+                Qt6::Multimedia
                 protobuf::libprotoc
                 protobuf::libprotobuf
                 protobuf::libprotobuf-lite

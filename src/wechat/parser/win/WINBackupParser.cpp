@@ -18,6 +18,7 @@
 #include "internal/details.h"
 
 using std::string;
+using std::vector;
 using std::unordered_map;
 using std::to_string;
 using std::vector;
@@ -38,9 +39,10 @@ WINBackupParser::WINBackupParser(const string& path) : backupPath(path)
     winArchives.setArchivesPath(path);
 }
 
-string WINBackupParser::getDBPassword(const string& userName)
+string getDBPassword(const WeChatLoginUser& user)
 {
-    return rawKeys.count(userName) == 0 ? defaultPass : rawKeys[userName];
+    return user.getSecretKey();
+    // return rawKeys.count(userName) == 0 ? defaultPass : rawKeys[userName];
 }
 
 static void loadDBPassFromLocalToMap(unordered_map<string, string>& rawKeys)
@@ -61,15 +63,40 @@ static void loadDBPassFromLocalToMap(unordered_map<string, string>& rawKeys)
     }
 }
 
-void WINBackupParser::loadBackup(model::WeChatBackup& backup)
+bool WINBackupParser::loadBackup(model::WeChatBackup& backup)
 {
     backup.setBackupType(wechat::model::BackupType::BackupType_WIN);
+    backup.setMetadata("rawKey", details::detectSqliteRawKey());
 
     // load dbpass from local json
-    loadDBPassFromLocalToMap(rawKeys);
+    // loadDBPassFromLocalToMap(rawKeys);
 
-    // detected runtime wechat pass
-    defaultPass = details::detectSqliteRawKey();
+    return true;
+}
+
+vector<string> WINBackupParser::listLoginUserNames(WeChatBackup& backup)
+{
+    return winArchives.listLoginUserNames();
+}
+
+WeChatLoginUser& WINBackupParser::loadLoginUser(model::WeChatBackup& backup, const std::string& loginUserName, const std::string& secretKey)
+{
+    string userID = md5(loginUserName);
+    WeChatLoginUser& loginUser = backup.getLoginUserByID(userID);
+    loginUser.setUserName(loginUserName);
+
+    if (secretKey.empty())
+    {
+        loginUser.setSecretKey(backup.getMetadata("rawKey"));
+    }
+    else
+    {
+        loginUser.setSecretKey(secretKey);
+    }
+
+    loadUserFriendFromContact(loginUser, loginUser);
+
+    return loginUser;
 }
 
 void WINBackupParser::loadLoginUsers(WeChatBackup& backup)
@@ -83,7 +110,7 @@ void WINBackupParser::loadLoginUsers(WeChatBackup& backup)
         users[userID] = WeChatLoginUser();
         users[userID].setUserName(userName);
 
-        loadUserFriendFromContact(userName, users[userID]);
+        loadUserFriendFromContact(users[userID], users[userID]);
     }
     backup.setLoginUsers(std::move(users));
 }
@@ -106,7 +133,7 @@ void WINBackupParser::loadUserFriendsFromSession(const WeChatLoginUser& user, st
                         "left join ContactHeadImgUrl as img on s.strUsrName == img.usrName";
 
     sqlitedb::StmtReader reader;
-    if (sqlitedb::queryData(dbPath, getDBPassword(user.UserName()), querySql, reader))
+    if (sqlitedb::queryData(dbPath, getDBPassword(user), querySql, reader))
     {
         while (reader.next())
         {
@@ -140,7 +167,7 @@ void WINBackupParser::loadUserFriendsDetailsFromMsg(const WeChatLoginUser& user,
         string msgDBPath = backupPath + "/" + user.UserName() + "/Msg/Multi/" + dbName;
 
         sqlitedb::StmtReader reader;
-        if (sqlitedb::queryData(msgDBPath, getDBPassword(user.UserName()), countSql, reader))
+        if (sqlitedb::queryData(msgDBPath, getDBPassword(user), countSql, reader))
         {
             while (reader.next())
             {
@@ -174,7 +201,7 @@ void WINBackupParser::loadGroupMembers(const WeChatLoginUser& user, WeChatFriend
     string contactSql = "select UserNameList from ChatRoom where ChatRoomName='" + afriend.UserName() + "'";
 
     sqlitedb::StmtReader reader;
-    if (sqlitedb::queryData(dbPath, getDBPassword(user.UserName()), contactSql, reader))
+    if (sqlitedb::queryData(dbPath, getDBPassword(user), contactSql, reader))
     {
         if (reader.next())
         {
@@ -182,7 +209,7 @@ void WINBackupParser::loadGroupMembers(const WeChatLoginUser& user, WeChatFriend
                 string memberID = md5(memberName);
                 WeChatFriend& member = afriend.getMember(memberID);
                 member.setUserName(memberName);
-                loadUserFriendFromContact(user.UserName(), member);
+                loadUserFriendFromContact(user, member);
             }
         }
     }
@@ -194,7 +221,7 @@ void WINBackupParser::loadGroupMember(const WeChatLoginUser& user, WeChatFriend&
     WeChatFriend& member = afriend.getMember(memberID);
     member.setUserName(memberName);
 
-    loadUserFriendFromContact(user.UserName(), member);
+    loadUserFriendFromContact(user, member);
 }
 
 static std::pair<int, int> getDBStartIndexByPageAndCount(const vector<int>& dbCounts, int page, int countPerPage)
@@ -227,14 +254,14 @@ vector<WeChatMessage> WINBackupParser::loadFriendMessages(const WeChatLoginUser&
             contactSql = contactSql + " order by CreateTime limit " + std::to_string(countPerPage) + " offset " + std::to_string(offset);
 
             sqlitedb::StmtReader reader;
-            if (sqlitedb::queryData(dbPath, getDBPassword(user.UserName()), contactSql, reader))
+            if (sqlitedb::queryData(dbPath, getDBPassword(user), contactSql, reader))
             {
                 while (reader.next())
                 {
                     messages.push_back(messageParser.parse(
                         reader.readString(5), reader.readInt(3), reader.readString(2), 
                         reader.readInt(1) == 1, reader.readInt(0), reader.readBlob(4)));
-                    messages.back().setDbPath(dbPaths[p]);
+                    messages.back().setMetadata("dbPath", dbPaths[p]);
                 }
             }
 
@@ -244,15 +271,15 @@ vector<WeChatMessage> WINBackupParser::loadFriendMessages(const WeChatLoginUser&
     return {};
 }
 
-bool WINBackupParser::loadUserFriendFromContact(const string& userName, model::WeChatUser& afriend)
+bool WINBackupParser::loadUserFriendFromContact(const model::WeChatLoginUser& user, model::WeChatUser& afriend)
 {
-    string dbPath = backupPath + "/" + userName + "/Msg/MicroMsg.db";
+    string dbPath = backupPath + "/" + user.UserName() + "/Msg/MicroMsg.db";
     string contactSql = "select c.UserName,c.Alias,c.Remark,c.NickName,img.smallHeadImgUrl,img.bigHeadImgUrl "
                         "from Contact as c, ContactHeadImgUrl as img where c.UserName == img.usrName and c.UserName = '";
     contactSql = contactSql + afriend.UserName() + "'";
 
     sqlitedb::StmtReader reader;
-    if (sqlitedb::queryData(dbPath, getDBPassword(userName), contactSql, reader))
+    if (sqlitedb::queryData(dbPath, getDBPassword(user), contactSql, reader))
     {
         if (reader.next())
         {
@@ -268,14 +295,14 @@ bool WINBackupParser::loadUserFriendFromContact(const string& userName, model::W
     return false;
 }
 
-string WINBackupParser::loadUserHeadImgData(const model::WeChatLoginUser* user, const model::WeChatUser* userOrFriend)
+string WINBackupParser::loadUserHeadImgData(const model::WeChatLoginUser& user, const model::WeChatUser& userOrFriend)
 {
     // download from HeadImgUrl or HeadImgUrlHD
-    string dbPath = backupPath + "/" + user->UserName() + "/Msg/Misc.db";
-    string contactSql = "select smallHeadBuf from ContactHeadImg1 where usrName = '" + userOrFriend->UserName() + "'";
+    string dbPath = backupPath + "/" + user.UserName() + "/Msg/Misc.db";
+    string contactSql = "select smallHeadBuf from ContactHeadImg1 where usrName = '" + userOrFriend.UserName() + "'";
 
     sqlitedb::StmtReader reader;
-    if (sqlitedb::queryData(dbPath, getDBPassword(user->UserName()), contactSql, reader))
+    if (sqlitedb::queryData(dbPath, getDBPassword(user), contactSql, reader))
     {
         if (reader.next())
         {
@@ -286,13 +313,13 @@ string WINBackupParser::loadUserHeadImgData(const model::WeChatLoginUser* user, 
     return "";
 }
 
-string WINBackupParser::loadUserAudioData(const model::WeChatLoginUser* user, const model::WeChatFriend* afriend, const model::WeChatMessage& message)
+string WINBackupParser::loadUserAudioData(const model::WeChatLoginUser& user, const model::WeChatFriend& afriend, const model::WeChatMessage& message)
 {
     string querySql = "select Buf from Media where Reserved0 = '" + message.getMsgSvrID() + "'";
-    string msgDBPath = backupPath + "/" + user->UserName() + "/Msg/Multi/MediaMsg" + message.getDbPath().substr(3);
+    string msgDBPath = backupPath + "/" + user.UserName() + "/Msg/Multi/MediaMsg" + message.getMetadata("dbPath").substr(3);
 
     sqlitedb::StmtReader reader;
-    if (sqlitedb::queryData(msgDBPath, getDBPassword(user->UserName()), querySql, reader))
+    if (sqlitedb::queryData(msgDBPath, getDBPassword(user), querySql, reader))
     {
         if (reader.next())
         {
@@ -300,5 +327,38 @@ string WINBackupParser::loadUserAudioData(const model::WeChatLoginUser* user, co
         }
     }
     std::cout << "cannot find audio in wrong dbpath" << std::endl;
+    return "";
+}
+
+bool getWeChatImageMask(const string& prefixContent, short& mask)
+{
+    for (auto key : {0xFFD8, 0x8950, 0x424D})
+    {
+        if (((unsigned char)(prefixContent[0]) ^ (key >> 8)) == ((unsigned char)(prefixContent[1]) ^ (key & 0x00FF)))
+        {
+            mask = prefixContent[0] ^ (key >> 8);
+            return true;
+        }
+    }
+    return false;
+}
+
+string WINBackupParser::loadMsgImgData(const string& fileName)
+{
+    // decode image data stored in Win PC client
+    if (Utils::isFileExist(fileName))
+    {
+        string fileContent = Utils::readBinaryFile(fileName);
+
+        short mask;
+        if (getWeChatImageMask(fileContent.substr(0, 3), mask))
+        {
+            for (auto& c : fileContent)
+            {
+                c ^= mask;
+            }
+        }
+        return fileContent;
+    }
     return "";
 }

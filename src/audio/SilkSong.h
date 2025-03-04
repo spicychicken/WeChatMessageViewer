@@ -9,7 +9,8 @@
 namespace audio
 {
 
-class SilkSong {
+class SilkSong
+{
 public:
     static SilkSong* fromPath(const std::string& path);
     static SilkSong* fromData(const std::string& data);

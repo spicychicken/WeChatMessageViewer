@@ -72,6 +72,27 @@ void MessageParser::parseByType(WeChatMessage& msg) const
     }
 }
 
+const WeChatUser* MessageParser::getSenderByID(const string& senderID) const
+{
+    if (user.UserID() == senderID)
+    {
+        return &user;
+    }
+    else if (afriend.UserID() == senderID)
+    {
+        return &afriend;
+    }
+    else if (afriend.memberExist(senderID))
+    {
+        return &afriend.getMember(senderID);
+    }
+    else if (user.friendExist(senderID))
+    {
+        return &user.getFriend(senderID);
+    }
+    return nullptr;
+}
+
 const WeChatUser* MessageParser::getSenderByName(const string& senderName) const
 {
     string senderID = md5(senderName);

@@ -14,6 +14,7 @@
 
 using std::string;
 using std::ifstream;
+using std::ofstream;
 using std::vector;
 using std::unordered_map;
 using namespace tinyxml2;
@@ -109,6 +110,15 @@ string Utils::readBinaryFile(const string& fileName)
     return string(std::istreambuf_iterator<char>{ifile}, std::istreambuf_iterator<char>{});
 }
 
+void Utils::writeBinaryFile(const std::string& fileName, const std::string& fileContent)
+{
+    ofstream ofile(fileName.c_str(), std::ios::out | std::ios::binary);
+    std::ostreambuf_iterator<char> output_it(ofile);
+    std::copy(fileContent.begin(), fileContent.end(), output_it);
+    ofile.flush();
+    ofile.close();
+}
+
 std::string Utils::timestampToString(int timestamp)
 {
     std::chrono::system_clock::time_point tp(std::chrono::seconds::duration(timestamp));
@@ -194,3 +204,30 @@ string Utils::getXmlNodeByPath(const string& xmlContent, const string& path)
     }
     return value;
 }
+
+string Utils::stringToHexString(const string& input)
+{
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0'); // 设置填充字符为'0'
+    for (char byte : input) {
+        ss << std::setw(2) << static_cast<int>(static_cast<unsigned char>(byte)); // 转换并设置每个字节的宽度为2
+    }
+    return ss.str();
+}
+
+string Utils::hexStringToString(const string& input)
+{
+    std::string result;
+    std::stringstream ss;
+    ss << std::hex << std::uppercase << std::setfill('0');
+    for (size_t i = 0; i < input.length(); i += 2) {
+        std::string byteStr = input.substr(i, 2);
+        unsigned int n;
+        ss << std::hex << byteStr;
+        ss >> n;
+        ss.clear(); // 重置stringstream
+        result.push_back(static_cast<char>(n));
+    }
+    return result;
+}
+
