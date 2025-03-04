@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/assets">
+        <file>images/DefaultProfileHead@2x.png</file>
+    </qresource>
+</RCC>

@@ -1,7 +1,7 @@
 #ifndef WECHAT_CONTEXT_H_
 #define WECHAT_CONTEXT_H_
 
-#include <string>
+#include <vector>
 
 #include "wechat/model/Model.h"
 
@@ -18,13 +18,25 @@ class WeChatContext
 public:
     static WeChatContext& get();
 
+    model::BackupType detectBackupType(const std::string& path);
+    bool initContextFromPath(const std::string& path);
+    std::vector<std::string> listLoginUserNames();
+    model::WeChatLoginUser* loadLoginUser(const std::string& loginUserName, const std::string& secretKey);
+    const model::WeChatFriend& getFriendByID(const std::string& friendID);
+    const std::vector<model::WeChatFriend>& listFriends();
+    std::vector<model::WeChatMessage> listMessages(const std::string& friendID, int start, int count);
+
+    bool playAudio(const std::string& friendID, const model::WeChatMessage& message);
+    std::string loadMsgImgData(const std::string& fileName);
+
+    ////////////////////////////////////////////
     void createParserFromPath(const std::string& path);
 
     void loadBackup();
     void loadLoginUsers();
     void loadCurrentLoginUserFriends();
 
-    bool switchCurrentLoginUser(const std::string& newUserID);
+    void switchCurrentLoginUser(model::WeChatLoginUser* newLoginUser);
 
 public:
     const std::unordered_map<std::string, model::WeChatLoginUser> getLoginUsers() const;

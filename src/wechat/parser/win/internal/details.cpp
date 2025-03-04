@@ -19,6 +19,7 @@ unordered_map<string, unsigned long> offsetOfRawKey = {
     {"3.9.9.43", 0x40E9F90},
     {"3.9.10.27", 0x5AB8590},
     {"3.9.12.17", 0x597D3E0},
+    {"3.9.12.45", 0x5A20860}
 };
 
 wstring s2ws(const string& s) {

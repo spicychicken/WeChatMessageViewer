@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/assets">
+        <file>icons/info.svg</file>
+        <file>icons/friend.svg</file>
+        <file>icons/group.svg</file>
+        <file>icons/message.svg</file>
+        <file>icons/exit.svg</file>
+        <file>icons/unknown.png</file>
+        <file>icons/image-not-found.png</file>
+    </qresource>
+</RCC>

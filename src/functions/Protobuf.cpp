@@ -85,16 +85,20 @@ std::string getUnknownFieldData(const UnknownField& field)
     return value;
 }
 
-static int countKeyWithPrefix(const std::unordered_map<std::string, std::string>& results, const std::string& key)
-{
-    int count = 0;
-
-}
-
-static void increaseKeyAndSetValue(std::unordered_map<std::string, std::string>& results, const std::string& key, const std::string& value)
+static void increaseKeyAndSetValue(std::unordered_map<std::string, std::string>& results, const std::string& key, const std::string& value,
+                std::unordered_map<std::string, int>& counts)
 {
     // add index
-    if (results.count(key + ".0") == 0)
+    if (results.count(key + "." + std::to_string(counts[key])) == 0)
+    {
+        results[key + "." + std::to_string(counts[key]++)] = value;
+    }
+    else
+    {
+        std::cout << "why here" << std::endl;
+    }
+
+    /* if (results.count(key + ".0") == 0)
     {
         results[key + ".0"] = value;
     }
@@ -110,45 +114,66 @@ static void increaseKeyAndSetValue(std::unordered_map<std::string, std::string>&
             return true;
         });
         results[key + "." + std::to_string(count)] = value;
+    }   */
+}
+
+void doTest(const std::string& content)
+{
+    Message* message = initializer.clone();
+    bool result = message->ParseFromString(content);
+    if (!result && message->ParseFromString(u8"\n" + content))
+    {
+        std::cout << "protobuf: " << content << std::endl;
     }
 }
 
 // [To-Do] memory leak?
-static void toMapImpl(const std::string& parentID, const std::string& content, std::unordered_map<std::string, std::string>& results)
+static void toMapImpl(const std::string& parentID, const std::string& content, std::unordered_map<std::string, std::string>& results, 
+                std::unordered_map<std::string, int>& counts, int level)
 {
-    Message* message = initializer.clone();
-    if (message->ParseFromString(content) || message->ParseFromString(u8"\n" + content))
+    if (level > 0)
     {
-        const UnknownFieldSet& ufs = message->GetReflection()->GetUnknownFields(*message);
-        for (int i = 0; i < ufs.field_count(); ++i)
+        Message* message = initializer.clone();
+        if (message->ParseFromString(content) || message->ParseFromString(u8"\n" + content))
+        // if (message->ParseFromString(content))
         {
-            auto field = ufs.field(i);
+            const UnknownFieldSet& ufs = message->GetReflection()->GetUnknownFields(*message);
+            for (int i = 0; i < ufs.field_count(); ++i)
+            {
+                auto field = ufs.field(i);
 
-            std::string fieldID = (parentID == "" ? "" : parentID + ".") + std::to_string(field.number());
-            // std::string fieldID = (parentID == "" ? "" : parentID + ".") + std::to_string(i);
+                std::string fieldID = (parentID == "" ? "" : parentID + ".") + std::to_string(field.number());
+                // std::string fieldID = (parentID == "" ? "" : parentID + ".") + std::to_string(i);
 
-            if (field.type() == UnknownField::TYPE_GROUP)
-            {
-                results[fieldID] = "group";
-            }
-            else if (field.type() == UnknownField::TYPE_LENGTH_DELIMITED)
-            {
-                toMapImpl(fieldID, getUnknownFieldData(field), results);
-            }
-            else
-            {
-                increaseKeyAndSetValue(results, fieldID, getUnknownFieldData(field));
+                if (field.type() == UnknownField::TYPE_GROUP)
+                {
+                    results[fieldID] = "group";
+                }
+                else if (field.type() == UnknownField::TYPE_LENGTH_DELIMITED)
+                {
+                    toMapImpl(fieldID, getUnknownFieldData(field), results, counts, level - 1);
+                }
+                else
+                {
+                    increaseKeyAndSetValue(results, fieldID, getUnknownFieldData(field), counts);
+                }
             }
         }
+        else
+        {
+            increaseKeyAndSetValue(results, parentID, content, counts);
+        }
     }
-    else{
-        increaseKeyAndSetValue(results, parentID, content);
+    else
+    {
+        increaseKeyAndSetValue(results, parentID, content, counts);
     }
 }
 
-std::unordered_map<std::string, std::string> Protobuf::toMap(const std::string& content)
+std::unordered_map<std::string, std::string> Protobuf::toMap(const std::string& content, int level)
 {
     std::unordered_map<std::string, std::string> results;
-    toMapImpl("", content, results);
+    std::unordered_map<std::string, int> counts;
+    toMapImpl("", content, results, counts, level);
     return results;
 }

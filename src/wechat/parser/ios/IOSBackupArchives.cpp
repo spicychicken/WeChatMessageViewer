@@ -16,7 +16,8 @@ using wechat::parser::ios::IOSBackupArchives;
 
 constexpr static char IOS_MANIFEST_FILE[] = "Manifest.db";
 
-void IOSBackupArchives::setArchivesPath(const std::string& path) {
+void IOSBackupArchives::setArchivesPath(const std::string& path)
+{
     folderName      = path;
     manifestPath    = folderName + Constants::BACKSLASH + IOS_MANIFEST_FILE;
 }
