@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.1.0)
 # Project
 project(WeChatMessageViewer VERSION 0.1 LANGUAGES C CXX)
 
-find_package(Qt6 COMPONENTS Core Qml Quick Charts Multimedia REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Qml Quick Charts Multimedia REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_package(tinyxml2 CONFIG REQUIRED)
@@ -49,12 +49,15 @@ file(
 add_executable(WeChatMessageViewer
     ${_source_list}
     ${_ui_list}
+    "assets/resources.rc"
 )
 
 set_target_properties(WeChatMessageViewer PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
+    WIN32_EXECUTABLE ON
+    MACOSX_BUNDLE ON
 )
 
 if(WIN32)
@@ -65,6 +68,7 @@ endif()
 
 target_link_libraries(WeChatMessageViewer PRIVATE 
                 Qt6::Core
+                Qt6::Gui
                 Qt6::Qml
                 Qt6::Quick
                 Qt6::Charts
